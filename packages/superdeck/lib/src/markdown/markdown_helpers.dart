@@ -56,7 +56,7 @@ class LerpStringResult {
 
 /// Grapheme-safe, layout-stable string interpolation with a ghost suffix.
 ///
-/// - First half (t<0.5): fade out the start suffix (left→right)
+/// - First half (t<0.5): fade out the start suffix (right→left)
 /// - Second half (t>0.5): fade in the end suffix (left→right)
 /// - Always returns:
 ///   * `text` (committed prefix),
@@ -65,6 +65,15 @@ class LerpStringResult {
 ///
 LerpStringResult lerpStringWithFade(String start, String end, double t) {
   t = t.clamp(0.0, 1.0);
+
+  // Allow transition previews without the character-by-character text effect.
+  const animateText = bool.fromEnvironment(
+    'SUPERDECK_ANIMATE_HERO_TEXT',
+    defaultValue: true,
+  );
+  if (!animateText) {
+    return LerpStringResult(text: t < 0.5 ? start : end);
+  }
 
   // Split by grapheme, not code-units.
   final startG = start.characters.toList();

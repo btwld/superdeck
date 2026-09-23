@@ -109,16 +109,26 @@ class ImageElementBuilder extends MarkdownElementBuilder
 
             final interpolatedSize = Size.lerp(fromSize, to.size, t)!;
             final interpolatedSpec = fromSpec.lerp(to.spec, t);
-            // Switch to destination image halfway through transition
-            final displayUri = t < 0.5 ? fromUri : to.uri;
-
-            return Container(
-              constraints: BoxConstraints.tight(interpolatedSize),
-              child: CachedImage(
-                uri: displayUri,
-                targetSize: interpolatedSize,
-                styleSpec: StyleSpec(spec: interpolatedSpec),
-              ),
+            Widget image(Uri uri) => CachedImage(
+              key: ValueKey(uri),
+              uri: uri,
+              targetSize: interpolatedSize,
+              styleSpec: StyleSpec(spec: interpolatedSpec),
+            );
+            final blend = Curves.easeInOut.transform(t);
+            return SizedBox.fromSize(
+              size: interpolatedSize,
+              child: fromUri == to.uri
+                  ? image(fromUri)
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Mount both providers for the entire flight, including at
+                        // zero opacity, so changing alpha never starts a new load.
+                        Opacity(opacity: 1 - blend, child: image(fromUri)),
+                        Opacity(opacity: blend, child: image(to.uri)),
+                      ],
+                    ),
             );
           },
         );

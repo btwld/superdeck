@@ -1,5 +1,360 @@
 [
   {
+    "key": "NgBjVjVU",
+    "options": {
+      "title": "Hero out",
+      "style": "heroFrom"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "# Hello World {.hero-title}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "u5LTHRK9",
+    "options": {
+      "title": "Hero in",
+      "style": "heroTo"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "# Hello Friend {.hero-title}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "St6MAwQy",
+    "options": {
+      "title": "Paragraph to heading — Before"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "A small idea can become a big story. {.paragraph-heading}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "0GyJvjxj",
+    "options": {
+      "title": "Paragraph to heading — After"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "### A small idea can become a big story. {.paragraph-heading}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "SKrll8KE",
+    "options": {
+      "title": "Heading sizes — Before"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "# Make room for ideas {.heading-sizes}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "BMj2haj7",
+    "options": {
+      "title": "Heading sizes — After"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "#### Make room for ideas {.heading-sizes}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "WT2Fnd6M",
+    "options": {
+      "title": "Paragraph reflow — Before"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "Good transitions preserve **every word**. This paragraph moves from a wide canvas into a narrower column, keeping its meaning and its *emphasis* intact. {.paragraph-reflow}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "3cONlnC6",
+    "options": {
+      "title": "Paragraph reflow — After"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": ""
+          },
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 2,
+            "scrollable": false,
+            "content": "A narrower column tells **a new story**. The old paragraph is erased, then this replacement types into its final layout with *emphasis* preserved. {.paragraph-reflow}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "pvqgY8ad",
+    "options": {
+      "title": "Image resize — Before"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "![Concepta](assets/concepta-icon.png) {.image-resize}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "ZoOX42Xf",
+    "options": {
+      "title": "Image resize — After"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": ""
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": ""
+          },
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 2,
+            "scrollable": false,
+            "content": "![Concepta](assets/concepta-icon.png) {.image-resize}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "yrGb4ol7",
+    "options": {
+      "title": "Image replacement — Before"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "![Concepta](assets/concepta-icon.png) {.image-replace}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "1boRpgXd",
+    "options": {
+      "title": "Image replacement — After"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "![SuperDeck](assets/transition-superdeck.png) {.image-replace}"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "g8dGjtJo",
+    "options": {
+      "title": "Code changes — Before"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "content": "```dart {.code-changes}\nfinal title = \"Hello\";\nprint(title);\n```"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "CdHSDYhU",
+    "options": {
+      "title": "Code changes — After"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": ""
+          },
+          {
+            "type": "block",
+            "align": "center",
+            "flex": 2,
+            "scrollable": false,
+            "content": "```dart {.code-changes}\nfinal slides = [\"Hello\", \"World\"];\nfor (final slide in slides) {\n  print(slide);\n}\n```"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "twqj0tSm",
     "options": {},
     "sections": [

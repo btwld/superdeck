@@ -29,6 +29,8 @@ void main() async {
           'announcement': announcementStyle(),
           'quote': quoteStyle(),
           'boxed': boxedStyle(),
+          'heroFrom': heroFromStyle(),
+          'heroTo': heroToStyle(),
         },
         templates: {
           'corporate': corporateTemplate(),
