@@ -651,42 +651,42 @@ packages:
     dependency: transitive
     description:
       name: google_cloud_ai_generativelanguage_v1beta
-      sha256: "5d8fc1023ca8d6b1357a2cac1331944bf3d866fc9bfce5ab46ddf7fa2d0713c0"
+      sha256: e7623c5ac5f8815f68527e6fdfbdfede7201c7194374d033e748cd23a7e0b07d
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.5.6"
   google_cloud_longrunning:
     dependency: transitive
     description:
       name: google_cloud_longrunning
-      sha256: "6795a17c5b14f50a7db2bb8564f2e033973fad698eae75fe7bd59f5614d5dda6"
+      sha256: "19063c3e548777d27f6c28600e4ba3a663d96a240d66d05d1ff89d1367c06f42"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.5.5"
   google_cloud_protobuf:
     dependency: transitive
     description:
       name: google_cloud_protobuf
-      sha256: f45f656c63d040b21d5cf947a3c44d537eb82ee68e485ccfcf2edbcbd1041461
+      sha256: "5c09f29ac930089e0347e4e0212845b810025e7602b7f62d8708614dc4897947"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.5.5"
   google_cloud_rpc:
     dependency: transitive
     description:
       name: google_cloud_rpc
-      sha256: "143ca2179dbcc5e4d16e8ee352aa4891b105b0aafc4e617bd4d713715a4afef2"
+      sha256: "397b41228b008f9ce6f5651f27e349bbad863ea9ef3f182aa20122fe98471c79"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.6.0"
   google_cloud_type:
     dependency: transitive
     description:
       name: google_cloud_type
-      sha256: f82055273f7f7a9f52d96285fd4fd61a79fc7ef86454d880b93cf81347c1d1ad
+      sha256: fcc69119b062d59b4908f9348d3dd6389351e4be693715f74577606d35fadd32
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.5.5"
   google_fonts:
     dependency: transitive
     description:
@@ -707,10 +707,10 @@ packages:
     dependency: transitive
     description:
       name: googleai_dart
-      sha256: "58c628b8b96ffff9d8a80e23ef7d2813ad38c0b48360a9c84e7234f15a8098de"
+      sha256: d2f4a2d10b017b4894d86958fde0aaac813568d00df6b9882a2ed877e7df724a
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "13.0.0"
   googleapis_auth:
     dependency: transitive
     description:
@@ -841,10 +841,10 @@ packages:
     dependency: transitive
     description:
       name: json_schema_builder
-      sha256: "9c45a80bc25d3b091e96a5a5da49dc7f80d5b0c8496cff60409f9739331ccefb"
+      sha256: "657db3229ba10305c48e8686e8b3aca16e12e639c3a7b96687a6eeb7836b6e1b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.5"
+    version: "0.1.7"
   json_serializable:
     dependency: transitive
     description:
