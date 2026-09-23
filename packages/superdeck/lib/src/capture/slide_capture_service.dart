@@ -105,7 +105,7 @@ class SlideCaptureService {
           config,
         );
 
-        return _imageToUint8List(image);
+        return await _imageToUint8List(image);
       } finally {
         for (final image in decodedImages.values) {
           image.dispose();

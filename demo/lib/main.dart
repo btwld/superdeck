@@ -15,9 +15,6 @@ void main() async {
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
 
-  // Enable semantics for testing
-  WidgetsBinding.instance.ensureSemantics();
-
   await SuperDeckApp.initialize();
   runApp(
     SuperDeckApp(
