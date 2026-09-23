@@ -1,8 +1,13 @@
 import {expect, test, type Page} from '@playwright/test';
 
-const appUrl = '/?enable-flutter-web-semantics=true';
+const appUrl = '/';
 
 async function waitForAppReady(page: Page) {
+  // The engine exposes this opt-in before it creates the semantics tree.
+  // Enable it explicitly instead of relying on an engine-specific URL flag.
+  await page
+    .getByRole('button', {name: 'Enable accessibility'})
+    .dispatchEvent('click');
   await expect.poll(() => hasSemanticsLabel(page, 'Open menu')).toBe(true);
   await expect(page.getByText('Error loading presentation')).toHaveCount(0);
 }
