@@ -13,34 +13,34 @@ packages:
     dependency: transitive
     description:
       name: ack
-      sha256: aa3be1f6f337e3edcd550358201dec755046ff891694c4c2010dc6e0334bf702
+      sha256: c3af28a09ee355884fedd3dd6acbccf9127d4c9d077346645dedc3d72b9f41fb
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.6.2"
   ack_annotations:
     dependency: transitive
     description:
       name: ack_annotations
-      sha256: bc5acf1a899999c8d3a9d9d79fa90774554320a47415b30db147f082a526fb84
+      sha256: a60395b266cd29fdae537d1bc4598fc106b3bf24e128df12321937d0f74fdd9a
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.6.2"
   ack_generator:
     dependency: transitive
     description:
       name: ack_generator
-      sha256: "82a917e4707f55cf3075ba3b03b09d703cf09354a3d5c8efb337f2b072cd4050"
+      sha256: b0f5dbb90f5ce8b116914a34fcf367d7f6e432b81bc15c00b4ddb10290975939
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.6.2"
   ack_json_schema_builder:
     dependency: transitive
     description:
       name: ack_json_schema_builder
-      sha256: "3f1f86b9195e5bf17de6d7326d6c2fa214244d963da7c952f37bec7589c88ab2"
+      sha256: "1e707daa934b7007484edda3bdc7ad0e29e099ec3b825387dc1afb0c2556c9ca"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.6.2"
   analyzer:
     dependency: transitive
     description:
