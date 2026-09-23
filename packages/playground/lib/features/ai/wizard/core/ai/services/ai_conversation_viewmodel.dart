@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:genui/genui.dart' as genui;
 import 'package:signals/signals_flutter.dart';
 
-import '../../../../quick_agent/core/constants/gemini_models.dart';
+import '../../../../generation/core/constants/gemini_models.dart';
 import '../../../../image_generation/image_style_preview_coordinator.dart';
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';

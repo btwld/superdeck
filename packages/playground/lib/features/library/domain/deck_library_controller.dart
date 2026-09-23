@@ -27,7 +27,6 @@ class DeckLibraryController extends ChangeNotifier {
   final PresentationTypographyCatalog _typographyCatalog;
 
   List<SavedDeckRef> _decks = const [];
-  SavedDeckRef? _openDeck;
   DeckSaveOutcome? _lastSave;
   String? _errorMessage;
   bool _isBusy = false;
@@ -80,9 +79,6 @@ class DeckLibraryController extends ChangeNotifier {
   /// Saved decks, newest first.
   List<SavedDeckRef> get decks => _decks;
 
-  /// The saved deck being presented, or `null` for a generated one.
-  SavedDeckRef? get openDeck => _openDeck;
-
   /// What the last save wrote, for the notice the Wizard shows.
   DeckSaveOutcome? get lastSave => _lastSave;
 
@@ -118,7 +114,6 @@ class DeckLibraryController extends ChangeNotifier {
         case Ok(:final value):
           _lastSave = value;
           // The saved copy, not the run's memory, now owns this artwork.
-          _openDeck = value.ref;
           _assetStore.bindTo(value.ref);
           _decks = [value.ref, ..._decks.where((ref) => ref != value.ref)];
 
@@ -160,7 +155,6 @@ class DeckLibraryController extends ChangeNotifier {
     try {
       switch (await _library.open(ref)) {
         case Ok(:final value):
-          _openDeck = value.ref;
           _assetStore.bindTo(value.ref);
           _documentStore.replaceMarkdown(value.markdown);
           _deckLoader.updateMarkdown(value.markdown);
@@ -179,7 +173,6 @@ class DeckLibraryController extends ChangeNotifier {
 
   /// Forgets the open saved deck, so a new generation owns the runtime again.
   void releaseOpenDeck() {
-    _openDeck = null;
     _lastSave = null;
     _assetStore.bindTo(null);
     notifyListeners();

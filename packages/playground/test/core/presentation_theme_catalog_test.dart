@@ -3,6 +3,23 @@ import 'package:playground/core/domain/design/presentation_color_contrast.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 
+/// Golden order for the twelve built-in themes, so a reorder or rename is
+/// caught even though nothing in production reads it back.
+const _expectedThemeIds = [
+  'editorial-midnight',
+  'technical-paper',
+  'bold-product',
+  'warm-editorial',
+  'nordic-air',
+  'monochrome-grid',
+  'signal-studio',
+  'playful-learning',
+  'data-noir',
+  'civic-blueprint',
+  'organic-sage',
+  'retro-poster',
+];
+
 void main() {
   group('PresentationThemeCatalog', () {
     test('ships twelve described, materially distinct versioned themes', () {
@@ -11,7 +28,7 @@ void main() {
       expect(catalog.themes, hasLength(12));
       expect(
         catalog.currentThemes.map((theme) => theme.id),
-        defaultPresentationThemeIds,
+        _expectedThemeIds,
       );
       expect(
         catalog.themes.map((theme) => '${theme.id}@${theme.version}').toSet(),

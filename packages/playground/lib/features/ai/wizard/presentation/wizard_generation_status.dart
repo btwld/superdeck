@@ -3,7 +3,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:remix/remix.dart';
 
-import '../../quick_agent/core/engine/services/generation_progress.dart';
+import '../../generation/core/engine/services/generation_progress.dart';
 import '../core/ui/ui.dart';
 
 enum WizardGenerationStatusKind { running, completed, failed }

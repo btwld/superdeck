@@ -90,7 +90,6 @@ void main() {
       expect(saved, isTrue);
       expect(scope.library.markdown['/decks/My talk.md'], '# Generated\n');
       expect(scope.controller.lastSave?.isComplete, isTrue);
-      expect(scope.controller.openDeck?.name, 'My talk');
       expect(scope.controller.decks.single.name, 'My talk');
       // The saved copy now answers for the artwork, not the run's memory.
       expect(await scope.assets.resolve('hero.png'), isNotNull);
@@ -117,7 +116,7 @@ void main() {
 
       expect(saved, isFalse);
       expect(scope.controller.errorMessage, contains('disk full'));
-      expect(scope.controller.openDeck, isNull);
+      expect(scope.controller.decks, isEmpty);
       expect(scope.controller.lastSave, isNull);
     });
 
@@ -138,7 +137,13 @@ void main() {
   group('open', () {
     test('publishes a saved deck and its theme', () async {
       final scope = newScope();
-      await scope.controller.save(name: 'My talk', theme: _theme);
+      await scope.controller.save(
+        name: 'My talk',
+        images: [
+          GeneratedImageAsset.success(assetKey: 'hero.png', bytes: [4]),
+        ],
+        theme: _theme,
+      );
       scope.document.replaceMarkdown('# Something else\n');
       scope.controller.releaseOpenDeck();
       final ref = scope.controller.decks.single;
@@ -147,7 +152,11 @@ void main() {
 
       expect(opened, isTrue);
       expect(scope.document.markdown, '# Generated\n');
-      expect(scope.controller.openDeck, ref);
+      expect(
+        await scope.assets.resolve('hero.png'),
+        isNotNull,
+        reason: 'the reopened deck answers for its own artwork',
+      );
       expect(scope.controller.errorMessage, isNull);
       expect(scope.customization.level(TextLevel.h1).family, isNotEmpty);
     });
@@ -180,7 +189,7 @@ void main() {
 
       expect(opened, isFalse);
       expect(scope.controller.errorMessage, contains('gone'));
-      expect(scope.controller.openDeck, isNull);
+      expect(scope.document.markdown, '# Generated\n');
     });
 
     test('releasing the open deck returns artwork to the run', () async {
@@ -195,8 +204,13 @@ void main() {
 
       scope.controller.releaseOpenDeck();
 
-      expect(scope.controller.openDeck, isNull);
-      expect(await scope.assets.resolve('hero.png'), isNotNull);
+      final resolved = await scope.assets.resolve('hero.png');
+      expect(resolved, isNotNull);
+      expect(
+        resolved!.scheme,
+        'data',
+        reason: 'the run\'s own artwork answers again, not the saved deck\'s',
+      );
     });
   });
 

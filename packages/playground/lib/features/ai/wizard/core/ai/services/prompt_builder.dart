@@ -1,5 +1,5 @@
 import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
-import '../../../../quick_agent/core/engine/services/deck_generation_request.dart';
+import '../../../../generation/core/engine/services/deck_generation_request.dart';
 import '../wizard_context.dart';
 
 /// Builds a deck generation prompt from wizard context data.

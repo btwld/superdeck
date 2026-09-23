@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
+import 'package:playground/features/ai/generation/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_outline_review.dart';
 
 void main() {

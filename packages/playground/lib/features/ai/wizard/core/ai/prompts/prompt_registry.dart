@@ -1,1 +1,1 @@
-export '../../../../quick_agent/core/engine/prompts/prompt_registry.dart';
+export '../../../../generation/core/engine/prompts/prompt_registry.dart';

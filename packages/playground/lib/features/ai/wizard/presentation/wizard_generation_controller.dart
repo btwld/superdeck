@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../quick_agent/core/engine/schemas/outline_schema.dart';
-import '../../quick_agent/core/engine/services/deck_generation_request.dart';
-import '../../quick_agent/core/engine/services/deck_generator_service.dart';
-import '../../quick_agent/core/engine/services/deck_plan_validator.dart';
-import '../../quick_agent/core/engine/services/generation_progress.dart';
-import '../../quick_agent/core/engine/services/generation_validation_issue.dart';
-import '../../quick_agent/domain/generated_deck_result_applier.dart';
+import '../../generation/core/engine/schemas/outline_schema.dart';
+import '../../generation/core/engine/services/deck_generation_request.dart';
+import '../../generation/core/engine/services/deck_generator_service.dart';
+import '../../generation/core/engine/services/deck_plan_validator.dart';
+import '../../generation/core/engine/services/generation_progress.dart';
+import '../../generation/core/engine/services/generation_validation_issue.dart';
+import '../../generation/domain/generated_deck_result_applier.dart';
 
 enum WizardGenerationStage {
   setup,
@@ -190,8 +190,6 @@ final class WizardGenerationController extends ChangeNotifier {
   }
 
   WizardGenerationStage get stage => _stage;
-
-  WizardGenerationPhase? get failedPhase => _failedPhase;
 
   DeckPlan? get plan => _plan;
 
