@@ -105,13 +105,23 @@ class HeroElement<T> extends InheritedWidget {
 Widget buildElementHero<T>({
   required String tag,
   required Widget child,
-  required Widget Function(BuildContext context, T from, T to, double t)
-  buildFlight,
+  Widget Function(BuildContext context, T from, T to, double t)? buildFlight,
+  HeroFlightShuttleBuilder? flightShuttleBuilder,
 }) {
+  assert(buildFlight != null || flightShuttleBuilder != null);
   return Hero(
     tag: tag,
-    child: child,
+    // A redirected page transition may rebuild the shuttle while either
+    // endpoint is still in flight. Flutter's default destination placeholder
+    // removes its child, leaving no paragraph for the shuttle to measure.
+    // Keep endpoint layout available, without painting, hit testing, semantics,
+    // or ticking its animations underneath the flying copy.
+    placeholderBuilder: (context, size, child) => SizedBox.fromSize(
+      size: size,
+      child: Offstage(child: TickerMode(enabled: false, child: child)),
+    ),
     flightShuttleBuilder:
+        flightShuttleBuilder ??
         (
           BuildContext flightContext,
           Animation<double> animation,
@@ -136,9 +146,17 @@ Widget buildElementHero<T>({
             animation: animation,
             builder: (context, _) => DefaultTextStyle.merge(
               style: slideTextStyle,
-              child: buildFlight(context, from, to, animation.value),
+              child: buildFlight!(
+                context,
+                from,
+                to,
+                flightDirection == HeroFlightDirection.push
+                    ? animation.value
+                    : 1 - animation.value,
+              ),
             ),
           );
         },
+    child: child,
   );
 }

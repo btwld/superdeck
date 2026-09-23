@@ -86,7 +86,6 @@ class ImageElementBuilder extends MarkdownElementBuilder
     }
 
     return StyleSpecBuilder<ImageSpec>(
-      styleSpec: styleSpec,
       builder: (builderContext, spec) {
         Widget imageWidget = ConstrainedBox(
           constraints: BoxConstraints.tight(totalSize),
@@ -97,7 +96,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
           context: builderContext,
           child: imageWidget,
           heroTag: heroTag,
-          heroData: ImageElement(size: totalSize, spec: spec, uri: uri),
+          heroData: ImageElement(spec: spec, uri: uri, size: totalSize),
           buildFlight: (flightContext, from, to, t) {
             final fromSize = from.size;
             final fromSpec = from.spec;
@@ -105,19 +104,31 @@ class ImageElementBuilder extends MarkdownElementBuilder
 
             final interpolatedSize = Size.lerp(fromSize, to.size, t)!;
             final interpolatedSpec = fromSpec.lerp(to.spec, t);
-            // Switch to destination image halfway through transition
-            final displayUri = t < 0.5 ? fromUri : to.uri;
+            Widget image(Uri uri) => CachedImage(
+              key: ValueKey(uri),
+              uri: uri,
+              styleSpec: StyleSpec(spec: interpolatedSpec),
+            );
+            final blend = Curves.easeInOut.transform(t);
 
-            return Container(
-              constraints: BoxConstraints.tight(interpolatedSize),
-              child: CachedImage(
-                uri: displayUri,
-                styleSpec: StyleSpec(spec: interpolatedSpec),
-              ),
+            return SizedBox.fromSize(
+              child: fromUri == to.uri
+                  ? image(fromUri)
+                  : Stack(
+                      fit: .expand,
+                      children: [
+                        // Mount both providers for the entire flight, including at
+                        // zero opacity, so changing alpha never starts a new load.
+                        Opacity(opacity: 1 - blend, child: image(fromUri)),
+                        Opacity(opacity: blend, child: image(to.uri)),
+                      ],
+                    ),
+              size: interpolatedSize,
             );
           },
         );
       },
+      styleSpec: styleSpec,
     );
   }
 }

@@ -16,6 +16,32 @@ import 'package:superdeck/src/utils/syntax_highlighter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
+  for (final content in ['A complete paragraph', 'A **complete** paragraph']) {
+    testWidgets('paragraph Hero strips its marker: $content', (tester) async {
+      await tester.pumpWidget(
+        _MarkdownHarness(markdown: '$content {.paragraph-hero}'),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is Hero && widget.tag == 'paragraph-hero',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Text &&
+              (widget.data ?? widget.textSpan?.toPlainText())?.trim() ==
+                  'A complete paragraph',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('{.paragraph-hero}'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   group('TextElementBuilder - visitElementAfterWithContext Migration', () {
     group('Basic Rendering', () {
       testWidgets(

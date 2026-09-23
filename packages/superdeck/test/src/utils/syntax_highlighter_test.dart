@@ -18,6 +18,36 @@ void main() {
     expect(afterInit[0].children, isNotEmpty);
   });
 
+  test('line splitting preserves inherited colors and parent text', () {
+    const color = Color(0xFFEEEEEE);
+    final lines = splitTextSpansByLines([
+      const TextSpan(
+        text: 'parent ',
+        style: TextStyle(color: color),
+        children: [
+          TextSpan(text: 'first\nsecond'),
+          TextSpan(
+            text: ' bold',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    ]);
+    expect(lines.map((line) => line.toPlainText()), [
+      'parent first',
+      'second bold',
+    ]);
+    for (final line in lines) {
+      for (final span in line.children!.cast<TextSpan>()) {
+        expect(span.style!.color, color);
+      }
+    }
+    expect(
+      (lines.last.children!.last as TextSpan).style!.fontWeight,
+      FontWeight.bold,
+    );
+  });
+
   group('splitTextSpansByLines', () {
     test('returns empty TextSpan for empty input', () {
       final result = splitTextSpansByLines([]);
