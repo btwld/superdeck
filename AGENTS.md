@@ -9,7 +9,7 @@ This file provides guidance to Claude Code and other AI assistants working on th
 SuperDeck is a Flutter presentation framework that renders slides written in Markdown. Users write slides in a `slides.md` file using Markdown syntax with custom block annotations, and SuperDeck renders them as a Flutter application.
 
 - **Live demo**: https://superdeck-dev.web.app
-- **Repository**: https://github.com/conceptadev/superdeck
+- **Repository**: https://github.com/btwld/superdeck
 
 ## Project Structure
 
