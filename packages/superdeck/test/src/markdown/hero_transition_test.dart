@@ -9,6 +9,7 @@ import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/styling/default_style.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
+import 'package:superdeck/src/ui/widgets/image_hero_flight.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -236,6 +237,295 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(_imageHeroData(tester).single.size, toData.size);
+  });
+
+  testWidgets('untagged Markdown and widget images fly by slide order', (
+    tester,
+  ) async {
+    _setSlideViewport(tester);
+    final from = Slide(
+      key: 'automatic-images-from',
+      sections: [
+        SectionBlock([
+          ContentBlock('![First]($_imageUri)'),
+          WidgetBlock(
+            name: 'image',
+            args: {'src': 'https://example.com/second.png'},
+          ),
+        ]),
+      ],
+    );
+    final to = Slide(
+      key: 'automatic-images-to',
+      sections: [
+        SectionBlock([
+          WidgetBlock(
+            name: 'image',
+            args: {'src': 'https://example.com/third.png'},
+          ),
+        ]),
+        SectionBlock([
+          ContentBlock('![Fourth](https://example.com/fourth.png)'),
+        ]),
+      ],
+    );
+
+    await _pumpHeroRoutes(tester, from: from, to: to);
+    expect(_imageHeroTags(tester), {'superdeck:image:0', 'superdeck:image:1'});
+
+    _navigateToNextSlide(tester);
+    await tester.pump();
+    await tester.pump(_transitionDuration ~/ 2);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(_imageHeroTags(tester), {'superdeck:image:0', 'superdeck:image:1'});
+    expect(
+      _imageHeroData(tester).map((image) => image.uri.toString()).toSet(),
+      {'https://example.com/third.png', 'https://example.com/fourth.png'},
+    );
+
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pump();
+    await tester.pump(_transitionDuration ~/ 2);
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+    expect(_imageHeroTags(tester), {'superdeck:image:0', 'superdeck:image:1'});
+  });
+
+  testWidgets('explicit image Hero tags override their automatic positions', (
+    tester,
+  ) async {
+    _setSlideViewport(tester);
+    await SlideTestHarness.pumpSlide(
+      tester,
+      Slide(
+        key: 'explicit-image-tags',
+        sections: [
+          SectionBlock([
+            ContentBlock(
+              'Inline ![icon]($_imageUri) stays text.\n\n'
+              '![First]($_imageUri) {.chosen}\n\n'
+              '![Second](https://example.com/second.png)',
+            ),
+            WidgetBlock(
+              name: 'image',
+              args: {'src': 'https://example.com/third.png'},
+            ),
+          ]),
+        ],
+      ),
+    );
+    expect(_imageHeroTags(tester), {
+      'chosen',
+      'superdeck:image:1',
+      'superdeck:image:2',
+    });
+  });
+
+  testWidgets('static slide capture excludes automatic image Heroes', (
+    tester,
+  ) async {
+    await SlideTestHarness.pumpSlide(
+      tester,
+      Slide(
+        key: 'static-images',
+        sections: [
+          SectionBlock([
+            ContentBlock('![Markdown]($_imageUri)'),
+            WidgetBlock(
+              name: 'image',
+              args: {'src': 'https://example.com/widget.png'},
+            ),
+          ]),
+        ],
+      ),
+      isStaticRendering: true,
+    );
+
+    expect(find.byType(Hero), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('nested standalone images take no automatic Hero position', (
+    tester,
+  ) async {
+    _setSlideViewport(tester);
+    final from = Slide(
+      key: 'nested-images-from',
+      sections: [
+        SectionBlock([
+          ContentBlock('> ![Quoted](https://example.com/a.png)'),
+          ContentBlock('> [!NOTE]\n> ![Alerted](https://example.com/b.png)'),
+          ContentBlock('- ![Listed](https://example.com/c.png)'),
+          ContentBlock('![Top](https://example.com/d.png)'),
+        ]),
+      ],
+    );
+    final to = Slide(
+      key: 'nested-images-to',
+      sections: [
+        SectionBlock([ContentBlock('![Next]($_imageUri)')]),
+      ],
+    );
+
+    await _pumpHeroRoutes(tester, from: from, to: to);
+    expect(find.byType(Hero), findsOneWidget);
+    expect(_imageHeroTags(tester), {'superdeck:image:0'});
+    // List items render only their text, so the listed image never mounts.
+    expect(find.byType(CachedImage), findsNWidgets(3));
+
+    _navigateToNextSlide(tester);
+    await tester.pump();
+    await tester.pump(_transitionDuration ~/ 2);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('explicit image Hero tags still apply inside a blockquote', (
+    tester,
+  ) async {
+    await SlideTestHarness.pumpSlide(
+      tester,
+      Slide(
+        key: 'quoted-explicit-tag',
+        sections: [
+          SectionBlock([ContentBlock('> ![Quoted]($_imageUri) {.chosen}')]),
+        ],
+      ),
+    );
+
+    expect(_imageHeroTags(tester), {'chosen'});
+  });
+
+  testWidgets('animateImages false keeps only explicit image Heroes', (
+    tester,
+  ) async {
+    SlideConfiguration still(Slide slide) =>
+        SlideTestHarness.createConfiguration(
+          slide,
+        ).copyWith(animateImages: false);
+
+    await SlideTestHarness.pumpConfiguration(
+      tester,
+      still(
+        Slide(
+          key: 'still-images',
+          sections: [
+            SectionBlock([
+              ContentBlock('![Markdown]($_imageUri)'),
+              WidgetBlock(
+                name: 'image',
+                args: {'src': 'https://example.com/widget.png'},
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+    expect(find.byType(Hero), findsNothing);
+    expect(find.byType(CachedImage), findsNWidgets(2));
+
+    await SlideTestHarness.pumpConfiguration(
+      tester,
+      still(
+        Slide(
+          key: 'still-explicit-image',
+          sections: [
+            SectionBlock([ContentBlock('![Chosen]($_imageUri) {.chosen}')]),
+          ],
+        ),
+      ),
+    );
+    expect(_imageHeroTags(tester), {'chosen'});
+  });
+
+  testWidgets('image flight follows the rendered Hero frame', (tester) async {
+    _setSlideViewport(tester);
+    final from = Slide(
+      key: 'sized-image-from',
+      sections: [
+        SectionBlock([
+          WidgetBlock(
+            name: 'image',
+            args: {'src': _imageUri, 'width': 120, 'height': 80},
+          ),
+        ]),
+      ],
+    );
+    final to = Slide(
+      key: 'sized-image-to',
+      sections: [
+        SectionBlock([
+          WidgetBlock(
+            name: 'image',
+            args: {'src': _imageUri, 'width': 240, 'height': 160},
+          ),
+        ]),
+      ],
+    );
+    await _pumpHeroRoutes(tester, from: from, to: to);
+
+    final fromSize = tester.getSize(find.byType(Hero));
+    expect(fromSize.width, 120);
+    expect(fromSize.height, 80);
+    _navigateToNextSlide(tester);
+    await tester.pump();
+    await tester.pump(_transitionDuration ~/ 2);
+
+    final flightSize = tester.getSize(
+      find.byKey(const ValueKey('image-hero-flight')),
+    );
+    expect(flightSize.width, greaterThan(fromSize.width));
+    expect(flightSize.height, greaterThan(fromSize.height));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+
+    final toSize = tester.getSize(find.byType(Hero));
+    expect(toSize.width, 240);
+    expect(toSize.height, 160);
+    expect(flightSize.width, lessThan(toSize.width));
+    expect(flightSize.height, lessThan(toSize.height));
+  });
+
+  testWidgets('image shuttle uses overlay bounds over stale block dimensions', (
+    tester,
+  ) async {
+    final from = ImageElement(
+      spec: const ImageSpec(),
+      uri: Uri.parse(_imageUri),
+      size: const Size(120, 540),
+      flightImage: const ColoredBox(color: Colors.red),
+    );
+    final to = ImageElement(
+      spec: const ImageSpec(),
+      uri: Uri.parse(_imageUri),
+      size: const Size(240, 540),
+      flightImage: const ColoredBox(color: Colors.blue),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 180,
+            height: 120,
+            child: Builder(
+              builder: (context) =>
+                  buildImageHeroFlight(context, from, to, 0.5),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      tester.getSize(find.byKey(const ValueKey('image-hero-flight'))),
+      const Size(180, 120),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(
@@ -673,6 +963,11 @@ List<ImageElement> _imageHeroData(
       .map((element) => element.data)
       .toList();
 }
+
+Set<String> _imageHeroTags(WidgetTester tester) => tester
+    .widgetList<Hero>(find.byType(Hero))
+    .map((hero) => hero.tag.toString())
+    .toSet();
 
 void _setSlideViewport(WidgetTester tester) {
   tester.view.physicalSize = const Size(1280, 720);

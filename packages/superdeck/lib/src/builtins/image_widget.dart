@@ -7,7 +7,10 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../deck/slide_configuration.dart';
 import '../markdown/builders/image_element_builder.dart' show isBareAssetKey;
 import '../rendering/blocks/block_provider.dart';
+import '../rendering/blocks/image_hero_positions.dart';
 import '../ui/widgets/cache_image_widget.dart';
+import '../ui/widgets/hero_element.dart';
+import '../ui/widgets/image_hero_flight.dart';
 import '../ui/widgets/provider.dart';
 import '../ui/widgets/resolved_asset_image.dart';
 import '../utils/converters.dart';
@@ -142,6 +145,37 @@ class ImageWidget extends StatelessWidget {
     : _data = ImageDto.parse(args),
       _decodedImage = decodedImage;
 
+  Widget _withHero(
+    BuildContext context,
+    Widget image,
+    ImageSpec spec,
+    Size blockSize,
+  ) {
+    final slide = InheritedData.maybeOf<SlideConfiguration>(context);
+    if (slide == null || slide.isStaticRendering || !slide.animateImages) {
+      return image;
+    }
+
+    final block = BlockConfiguration.of(context);
+    final size = Size(
+      _data.width ?? blockSize.width,
+      _data.height ?? blockSize.height,
+    );
+    return HeroElement<ImageElement>(
+      data: ImageElement(
+        spec: spec,
+        uri: _data.src,
+        size: size,
+        flightImage: image,
+      ),
+      child: buildElementHero<ImageElement>(
+        tag: automaticImageHeroTag(block.imageHeroStart),
+        child: image,
+        buildFlight: buildImageHeroFlight,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
@@ -183,7 +217,10 @@ class ImageWidget extends StatelessWidget {
       final constrained = hasExplicitSize
           ? SizedBox(width: _data.width, height: _data.height, child: image)
           : image;
-      return Align(alignment: flutterAlignment, child: constrained);
+      return Align(
+        alignment: flutterAlignment,
+        child: _withHero(context, constrained, styleSpec.spec, data.size),
+      );
     }
 
     final transformed = Transform.scale(
@@ -200,7 +237,12 @@ class ImageWidget extends StatelessWidget {
 
     return Align(
       alignment: flutterAlignment,
-      child: ClipRect(child: frame),
+      child: _withHero(
+        context,
+        ClipRect(child: frame),
+        styleSpec.spec,
+        data.size,
+      ),
     );
   }
 }

@@ -146,7 +146,7 @@ class AlertElementBuilder extends MarkdownElementBuilder {
                     child: MarkdownBody(
                       data: rawMarkdown.trimRight(),
                       extensionSet: extensionSet,
-                      blockSyntaxes: registry.blockSyntaxes,
+                      blockSyntaxes: registry.nestedBlockSyntaxes,
                       inlineSyntaxes: registry.inlineSyntaxes,
                       builders: registry.builders,
                       paddingBuilders: registry.paddingBuilders,

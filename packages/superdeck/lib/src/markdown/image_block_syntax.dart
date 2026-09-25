@@ -13,7 +13,15 @@ import 'package:markdown/markdown.dart' as md;
 ///
 /// Note: Only standalone images are supported. Inline images within text
 /// (e.g., `See ![icon](x.png) here`) are not handled by this syntax.
+///
+/// Only top-level standalone images take an automatic Hero position. Standalone
+/// images nested in blockquotes, alerts, or list items still render, but match
+/// across slides only through an explicit `{.hero}` tag.
 class ImageBlockSyntax extends md.BlockSyntax {
+  /// Whether top-level images parsed by this syntax take an automatic Hero
+  /// position. False for Markdown re-rendered inside another element.
+  final bool assignsHeroPosition;
+
   /// Pattern matches standalone image lines: `![alt](url)` with optional hero tag
   ///
   /// Captures:
@@ -25,7 +33,7 @@ class ImageBlockSyntax extends md.BlockSyntax {
     r'^\s*!\[([^\]]*)\]\(([^)]+?)(?:\s+"([^"]*)")?\)\s*(?:\{\.([a-zA-Z][\w-]*)\})?\s*$',
   );
 
-  ImageBlockSyntax();
+  ImageBlockSyntax({this.assignsHeroPosition = true});
 
   @override
   RegExp get pattern => _pattern;
@@ -50,6 +58,12 @@ class ImageBlockSyntax extends md.BlockSyntax {
     final element = md.Element.empty('img')
       ..attributes['src'] = src
       ..attributes['alt'] = alt;
+
+    // Blockquotes, alerts, and lists parse their children with themselves as
+    // the parent syntax, so a null parent means a top-level image.
+    if (assignsHeroPosition && parser.parentSyntax == null) {
+      element.attributes['data-superdeck-block-image'] = 'true';
+    }
 
     if (title != null) {
       element.attributes['title'] = title;
