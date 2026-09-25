@@ -401,6 +401,48 @@ void main() {
     expect(_imageHeroTags(tester), {'chosen'});
   });
 
+  testWidgets('animateImages false keeps only explicit image Heroes', (
+    tester,
+  ) async {
+    SlideConfiguration still(Slide slide) =>
+        SlideTestHarness.createConfiguration(
+          slide,
+        ).copyWith(animateImages: false);
+
+    await SlideTestHarness.pumpConfiguration(
+      tester,
+      still(
+        Slide(
+          key: 'still-images',
+          sections: [
+            SectionBlock([
+              ContentBlock('![Markdown]($_imageUri)'),
+              WidgetBlock(
+                name: 'image',
+                args: {'src': 'https://example.com/widget.png'},
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+    expect(find.byType(Hero), findsNothing);
+    expect(find.byType(CachedImage), findsNWidgets(2));
+
+    await SlideTestHarness.pumpConfiguration(
+      tester,
+      still(
+        Slide(
+          key: 'still-explicit-image',
+          sections: [
+            SectionBlock([ContentBlock('![Chosen]($_imageUri) {.chosen}')]),
+          ],
+        ),
+      ),
+    );
+    expect(_imageHeroTags(tester), {'chosen'});
+  });
+
   testWidgets('image flight follows the rendered Hero frame', (tester) async {
     _setSlideViewport(tester);
     final from = Slide(

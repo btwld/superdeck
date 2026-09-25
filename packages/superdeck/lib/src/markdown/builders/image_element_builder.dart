@@ -68,12 +68,13 @@ class ImageElementBuilder extends MarkdownElementBuilder
       return ErrorWidgets.simple('Invalid image source: ${e.toString()}');
     }
 
+    final slide = InheritedData.maybeOf<SlideConfiguration>(context);
     final block = BlockConfiguration.of(context);
     final isStandalone =
         element.attributes['data-superdeck-block-image'] == 'true';
     final heroTag =
         element.attributes['hero'] ??
-        (isStandalone
+        (isStandalone && (slide?.animateImages ?? true)
             ? automaticImageHeroTag(block.imageHeroStart + _nextImageIndex)
             : null);
     if (isStandalone) _nextImageIndex++;
@@ -83,9 +84,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
 
     // A bare key (e.g. an AI-generated `slide-x-illustration.png`) is resolved
     // through the slide's asset cache when one is bound.
-    final assetCacheStore = InheritedData.maybeOf<SlideConfiguration>(
-      context,
-    )?.assetCacheStore;
+    final assetCacheStore = slide?.assetCacheStore;
     if (assetCacheStore != null && isBareAssetKey(uri)) {
       final image = ConstrainedBox(
         constraints: BoxConstraints.tight(totalSize),

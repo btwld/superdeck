@@ -68,6 +68,7 @@ class SlideConfigurationBuilder {
       thumbnailKey: buildThumbnailKey(slide.key),
       parts: resolution.parts,
       debug: options.debug,
+      animateImages: options.animateImages,
       assetCacheStore: assetCacheStore,
     );
   }

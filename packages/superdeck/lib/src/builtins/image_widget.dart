@@ -152,7 +152,9 @@ class ImageWidget extends StatelessWidget {
     Size blockSize,
   ) {
     final slide = InheritedData.maybeOf<SlideConfiguration>(context);
-    if (slide == null || slide.isStaticRendering) return image;
+    if (slide == null || slide.isStaticRendering || !slide.animateImages) {
+      return image;
+    }
 
     final block = BlockConfiguration.of(context);
     final size = Size(

@@ -164,5 +164,18 @@ void main() {
 
       expect(configs.first.thumbnailKey, 'thumbnail_cover.png');
     });
+
+    test('animateImages carries the deck option to every slide', () {
+      final slides = [Slide(key: 'a'), Slide(key: 'b')];
+
+      final animated = builder.buildConfigurations(slides, DeckOptions());
+      final still = builder.buildConfigurations(
+        slides,
+        DeckOptions(animateImages: false),
+      );
+
+      expect(animated.map((config) => config.animateImages), [true, true]);
+      expect(still.map((config) => config.animateImages), [false, false]);
+    });
   });
 }
