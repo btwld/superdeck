@@ -8,7 +8,7 @@ import '../../rendering/blocks/image_hero_positions.dart';
 import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/hero_element.dart';
-import '../../ui/widgets/image_hero_flight.dart';
+import '../../ui/widgets/image_hero_flight_widget.dart';
 import '../../ui/widgets/provider.dart';
 import '../../ui/widgets/resolved_asset_image.dart';
 import '../../utils/uri_validator.dart';
@@ -106,7 +106,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
           size: totalSize,
           flightImage: image,
         ),
-        buildFlight: buildImageHeroFlight,
+        flightShuttleBuilder: buildImageHeroFlight,
       );
     }
 
@@ -122,7 +122,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
           child: imageWidget,
           heroTag: heroTag,
           heroData: ImageElement(spec: spec, uri: uri, size: totalSize),
-          buildFlight: buildImageHeroFlight,
+          flightShuttleBuilder: buildImageHeroFlight,
         );
       },
       styleSpec: styleSpec,

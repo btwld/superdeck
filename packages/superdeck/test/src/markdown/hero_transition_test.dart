@@ -9,7 +9,7 @@ import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/styling/default_style.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
-import 'package:superdeck/src/ui/widgets/image_hero_flight.dart';
+import 'package:superdeck/src/ui/widgets/image_hero_flight_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -513,8 +513,11 @@ void main() {
             width: 180,
             height: 120,
             child: Builder(
-              builder: (context) =>
-                  buildImageHeroFlight(context, from, to, 0.5),
+              builder: (context) => ImageHeroFlight(
+                from: from,
+                to: to,
+                animation: const AlwaysStoppedAnimation<double>(0.5),
+              ),
             ),
           ),
         ),
