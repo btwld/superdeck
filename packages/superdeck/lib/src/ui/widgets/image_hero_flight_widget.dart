@@ -4,25 +4,6 @@ import 'package:mix/mix.dart';
 import 'cache_image_widget.dart';
 import 'hero_element.dart';
 
-/// Builds an image shuttle from the Hero endpoints for either flight direction.
-Widget buildImageHeroFlight(
-  BuildContext context,
-  Animation<double> animation,
-  HeroFlightDirection direction,
-  BuildContext fromContext,
-  BuildContext toContext,
-) {
-  final to = HeroElement.of<ImageElement>(toContext);
-  final from = HeroElement.maybeOf<ImageElement>(fromContext) ?? to;
-  return ImageHeroFlight(
-    from: from,
-    to: to,
-    animation: direction == HeroFlightDirection.push
-        ? animation
-        : ReverseAnimation(animation),
-  );
-}
-
 /// Moves an image between frames while blending different image sources.
 class ImageHeroFlight extends StatelessWidget {
   final ImageElement from;
@@ -35,6 +16,25 @@ class ImageHeroFlight extends StatelessWidget {
     required this.to,
     required this.animation,
   });
+
+  /// Adapts Flutter's Hero endpoints and flight direction to this widget.
+  static Widget buildShuttle(
+    BuildContext context,
+    Animation<double> animation,
+    HeroFlightDirection direction,
+    BuildContext fromContext,
+    BuildContext toContext,
+  ) {
+    final to = HeroElement.of<ImageElement>(toContext);
+    final from = HeroElement.maybeOf<ImageElement>(fromContext) ?? to;
+    return ImageHeroFlight(
+      from: from,
+      to: to,
+      animation: direction == HeroFlightDirection.push
+          ? animation
+          : ReverseAnimation(animation),
+    );
+  }
 
   Widget _image(ImageElement element, ImageSpec spec) =>
       element.flightImage ??
