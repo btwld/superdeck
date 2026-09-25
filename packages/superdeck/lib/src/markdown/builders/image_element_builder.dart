@@ -25,6 +25,10 @@ bool isBareAssetKey(Uri uri) =>
 class ImageElementBuilder extends MarkdownElementBuilder
     with MarkdownHeroMixin {
   final StyleSpec<ImageSpec> styleSpec;
+
+  // Restarts only when `_MarkdownBuilder` recreates the registry that owns this
+  // builder. Nested bodies, such as alerts, reuse this builder but parse with
+  // `nestedBlockSyntaxes`, so their images never advance the count.
   int _nextImageIndex = 0;
 
   ImageElementBuilder([this.styleSpec = const StyleSpec(spec: ImageSpec())]);

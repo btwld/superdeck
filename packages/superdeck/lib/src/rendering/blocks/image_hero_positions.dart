@@ -1,7 +1,7 @@
 import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../markdown/image_block_syntax.dart';
+import '../../markdown/markdown_element_builders_registry.dart';
 
 /// Positions image Heroes by their order in a slide, regardless of layout.
 class ImageHeroPositions {
@@ -24,14 +24,18 @@ class ImageHeroPositions {
   static int _countMarkdownImages(String content) {
     final document = md.Document(
       extensionSet: md.ExtensionSet.gitHubWeb,
-      blockSyntaxes: [ImageBlockSyntax()],
+      blockSyntaxes: markdownBlockSyntaxes(),
     );
-    // Inline images become alt text in MarkdownViewer, so only top-level
-    // standalone images consume a Hero position.
+    // Inline images become alt text in MarkdownViewer, and nested standalone
+    // images render without an automatic tag, so only top-level standalone
+    // images consume a Hero position.
     return document
         .parseLines(content.split('\n'))
         .whereType<md.Element>()
-        .where((element) => element.tag == 'img')
+        .where(
+          (element) =>
+              element.attributes['data-superdeck-block-image'] == 'true',
+        )
         .length;
   }
 

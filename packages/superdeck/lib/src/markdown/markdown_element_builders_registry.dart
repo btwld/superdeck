@@ -12,22 +12,36 @@ import 'builders/image_element_builder.dart';
 import 'builders/text_element_builder.dart';
 import 'image_block_syntax.dart';
 
+/// Custom block-level syntaxes for a slide's Markdown.
+///
+/// [ImageBlockSyntax] must be first to intercept standalone image lines
+/// before they get wrapped in `<p>` tags by the default paragraph parser.
+/// `ImageHeroPositions` counts images with the default list, so its automatic
+/// Hero positions match the ones assigned while rendering.
+List<md.BlockSyntax> markdownBlockSyntaxes({bool assignsHeroPosition = true}) {
+  return [
+    ImageBlockSyntax(assignsHeroPosition: assignsHeroPosition),
+    const HeaderTagSyntax(),
+    const HeroFencedCodeBlockSyntax(),
+    const AlertBlockSyntax(),
+  ];
+}
+
 /// Registry for markdown element builders, syntaxes, and layout builders.
 class SpecMarkdownBuilders {
   final SlideSpec spec;
 
   SpecMarkdownBuilders(this.spec);
 
-  /// Custom block-level syntaxes.
-  ///
-  /// [ImageBlockSyntax] must be first to intercept standalone image lines
-  /// before they get wrapped in `<p>` tags by the default paragraph parser.
-  final List<md.BlockSyntax> blockSyntaxes = [
-    ImageBlockSyntax(),
-    const HeaderTagSyntax(),
-    const HeroFencedCodeBlockSyntax(),
-    const AlertBlockSyntax(),
-  ];
+  /// Custom block-level syntaxes for a block's own Markdown.
+  final List<md.BlockSyntax> blockSyntaxes = markdownBlockSyntaxes();
+
+  /// Custom block-level syntaxes for Markdown re-rendered inside another
+  /// element, such as an alert body, where images take no automatic Hero
+  /// position.
+  final List<md.BlockSyntax> nestedBlockSyntaxes = markdownBlockSyntaxes(
+    assignsHeroPosition: false,
+  );
 
   /// Custom inline syntaxes.
   final List<md.InlineSyntax> inlineSyntaxes = [ImageHeroSyntax()];

@@ -348,6 +348,59 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('nested standalone images take no automatic Hero position', (
+    tester,
+  ) async {
+    _setSlideViewport(tester);
+    final from = Slide(
+      key: 'nested-images-from',
+      sections: [
+        SectionBlock([
+          ContentBlock('> ![Quoted](https://example.com/a.png)'),
+          ContentBlock('> [!NOTE]\n> ![Alerted](https://example.com/b.png)'),
+          ContentBlock('- ![Listed](https://example.com/c.png)'),
+          ContentBlock('![Top](https://example.com/d.png)'),
+        ]),
+      ],
+    );
+    final to = Slide(
+      key: 'nested-images-to',
+      sections: [
+        SectionBlock([ContentBlock('![Next]($_imageUri)')]),
+      ],
+    );
+
+    await _pumpHeroRoutes(tester, from: from, to: to);
+    expect(find.byType(Hero), findsOneWidget);
+    expect(_imageHeroTags(tester), {'superdeck:image:0'});
+    // List items render only their text, so the listed image never mounts.
+    expect(find.byType(CachedImage), findsNWidgets(3));
+
+    _navigateToNextSlide(tester);
+    await tester.pump();
+    await tester.pump(_transitionDuration ~/ 2);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('explicit image Hero tags still apply inside a blockquote', (
+    tester,
+  ) async {
+    await SlideTestHarness.pumpSlide(
+      tester,
+      Slide(
+        key: 'quoted-explicit-tag',
+        sections: [
+          SectionBlock([ContentBlock('> ![Quoted]($_imageUri) {.chosen}')]),
+        ],
+      ),
+    );
+
+    expect(_imageHeroTags(tester), {'chosen'});
+  });
+
   testWidgets('image flight follows the rendered Hero frame', (tester) async {
     _setSlideViewport(tester);
     final from = Slide(
