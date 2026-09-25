@@ -227,6 +227,6 @@ Use Markdown class markers to animate matching elements between slides. The firs
 
 Use the same tag for the element that should transition from one slide to the next. For example, one `{.heading}` on slide A can animate to one `{.heading}` on slide B.
 
-Standalone Markdown images and `@image` blocks transition automatically by image order: the first image on one slide moves to the first on the next slide, the second to the second, and so on. This also blends different image sources. Use an explicit Markdown class marker when an image needs to match by a named identity instead of its position. Images without a partner on the adjacent slide render normally.
+Standalone Markdown images and `@image` blocks transition automatically by image order: the first image on one slide moves to the first on the next slide, the second to the second, and so on. This also blends different image sources. Use an explicit Markdown class marker when an image needs to match by a named identity instead of its position. Images without a partner on the adjacent slide render normally. Images nested in blockquotes, alerts, or list items do not take part, and `DeckOptions(animateImages: false)` turns automatic image transitions off for the whole deck.
 
 Do not use the same tag twice on one slide. Each Hero tag must identify one element per slide, so use separate tags like `{.heading}` and `{.subheading}` when multiple elements should animate.

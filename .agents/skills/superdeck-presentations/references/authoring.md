@@ -443,7 +443,7 @@ The first valid class name is used as the Hero tag. The class does not need a `h
 
 Use the same tag on the element that should animate from one slide to the next. For example, a heading marked `{.heading}` on slide 1 will transition to the heading marked `{.heading}` on slide 2.
 
-Images also transition automatically by their order on consecutive slides, including standalone Markdown images and `@image` blocks. The first image flies to the first image, the second to the second, and so on, even when the layout or source changes. An explicit Markdown image tag overrides its automatic match when a particular image needs a stable identity.
+Images also transition automatically by their order on consecutive slides, including standalone Markdown images and `@image` blocks. The first image flies to the first image, the second to the second, and so on, even when the layout or source changes. An explicit Markdown image tag overrides its automatic match when a particular image needs a stable identity. Images nested in blockquotes, alerts, or list items do not take part, and `DeckOptions(animateImages: false)` turns automatic image transitions off for the whole deck.
 
 Do not duplicate the same Hero tag on one slide. Flutter Hero transitions require one source/destination element for each tag in a route; if a slide contains two elements marked `{.heading}`, the transition is ambiguous and can fail. Use distinct tags such as `{.heading}` and `{.subheading}` for multiple animated text elements on the same slide.
 
