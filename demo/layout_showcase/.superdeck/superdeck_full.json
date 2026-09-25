@@ -10,6 +10,16 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 5,
+            "padding": {
+              "top": 28.0,
+              "right": 34.0,
+              "bottom": 28.0,
+              "left": 34.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -70,20 +80,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 5,
-            "padding": {
-              "top": 28.0,
-              "right": 34.0,
-              "bottom": 28.0,
-              "left": 34.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 6,
             "margin": {
@@ -99,7 +99,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1.04
@@ -123,6 +123,16 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "padding": {
+              "top": 14.0,
+              "right": 24.0,
+              "bottom": 14.0,
+              "left": 24.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -152,17 +162,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "padding": {
-              "top": 14.0,
-              "right": 24.0,
-              "bottom": 14.0,
-              "left": 24.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -172,6 +172,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -214,12 +217,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -248,12 +251,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -282,10 +285,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -296,6 +296,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -324,12 +327,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -372,12 +375,13 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "bottomRight",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -406,11 +410,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "bottomRight",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -431,6 +431,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -460,11 +464,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -474,6 +474,16 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 4,
+            "padding": {
+              "top": 0.0,
+              "right": 18.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -598,20 +608,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 4,
-            "padding": {
-              "top": 0.0,
-              "right": 18.0,
-              "bottom": 0.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 7,
             "margin": {
@@ -627,7 +627,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1.12
@@ -641,7 +641,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -657,11 +657,27 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "cover"
           },
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 4,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 10.0,
+              "bottom": 0.0,
+              "left": 10.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -690,26 +706,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 4,
-            "margin": {
-              "top": 12.0,
-              "right": 0.0,
-              "bottom": 0.0,
-              "left": 0.0
-            },
-            "padding": {
-              "top": 0.0,
-              "right": 10.0,
-              "bottom": 0.0,
-              "left": 10.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 2,
             "margin": {
@@ -725,7 +725,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "cover",
             "scale": 1.18
@@ -749,6 +749,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -778,11 +782,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -792,6 +792,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -830,12 +833,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -874,10 +877,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -888,7 +888,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "padding": {
@@ -898,14 +898,14 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "contain",
             "width": 560,
             "height": 420
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "padding": {
@@ -915,7 +915,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "width": 560,
@@ -940,6 +940,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -969,11 +973,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -983,7 +983,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "topLeft",
             "flex": 1,
             "padding": {
@@ -993,13 +993,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "contain",
             "scale": 0.72
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "padding": {
@@ -1009,13 +1009,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "bottomRight",
             "flex": 1,
             "padding": {
@@ -1025,7 +1025,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1.35
@@ -1039,6 +1039,15 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1067,7 +1076,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
+            }
+          },
+          {
+            "type": "block",
             "flex": 1,
             "margin": {
               "top": 14.0,
@@ -1076,9 +1088,6 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
-          },
-          {
             "content": {
               "type": "document",
               "children": [
@@ -1107,7 +1116,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
+            }
+          },
+          {
+            "type": "block",
             "flex": 1,
             "margin": {
               "top": 14.0,
@@ -1116,9 +1128,6 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
-          },
-          {
             "content": {
               "type": "document",
               "children": [
@@ -1147,16 +1156,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "margin": {
-              "top": 14.0,
-              "right": 0.0,
-              "bottom": 0.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "topLeft",
@@ -1177,6 +1177,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1206,11 +1210,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1220,7 +1220,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "margin": {
@@ -1236,13 +1236,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "cover",
             "scale": 1.06
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "margin": {
@@ -1258,12 +1258,12 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 1,
             "margin": {
@@ -1279,7 +1279,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "cover",
             "scale": 1.14
@@ -1293,6 +1293,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1321,12 +1324,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1355,12 +1358,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1389,10 +1392,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "topLeft",
@@ -1404,7 +1404,7 @@
     "comments": []
   },
   {
-    "key": "UFjcGQIQ",
+    "key": "X18HmHk2",
     "options": {
       "title": "Image treatment matrix",
       "style": "compact"
@@ -1413,6 +1413,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1442,11 +1446,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1456,6 +1456,16 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1495,20 +1505,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 2,
-            "margin": {
-              "top": 16.0,
-              "right": 0.0,
-              "bottom": 16.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 4,
             "margin": {
@@ -1524,13 +1524,23 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "fitWidth",
             "width": 320,
             "height": 205
           },
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1570,20 +1580,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 2,
-            "margin": {
-              "top": 16.0,
-              "right": 0.0,
-              "bottom": 16.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 4,
             "margin": {
@@ -1599,7 +1599,7 @@
               "left": 12.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "fitHeight",
             "width": 320,
@@ -1614,6 +1614,16 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1653,20 +1663,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 2,
-            "margin": {
-              "top": 16.0,
-              "right": 0.0,
-              "bottom": 16.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 4,
             "margin": {
@@ -1682,53 +1682,14 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "fill",
             "width": 320,
             "height": 205
           },
           {
-            "content": {
-              "type": "document",
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "h4",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "SCALE DOWN"
-                    }
-                  ],
-                  "generatedId": "scale-down"
-                },
-                {
-                  "type": "element",
-                  "tag": "h3",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Source leads."
-                    }
-                  ],
-                  "generatedId": "source-leads"
-                },
-                {
-                  "type": "element",
-                  "tag": "p",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Margin and padding create a floating study."
-                    }
-                  ]
-                }
-              ],
-              "linkReferences": {},
-              "footnoteLabels": [],
-              "footnoteReferences": {}
-            },
+            "type": "block",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -1738,31 +1699,70 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "FULL BLEED"
+                    }
+                  ],
+                  "generatedId": "full-bleed"
+                },
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Frame leads."
+                    }
+                  ],
+                  "generatedId": "frame-leads"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Zero margin and padding let the image fill its card."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            }
           },
           {
-            "name": "image",
-            "align": "bottomRight",
+            "type": "widget",
+            "align": "center",
             "flex": 4,
             "margin": {
-              "top": 16.0,
-              "right": 8.0,
-              "bottom": 16.0,
-              "left": 8.0
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
             },
             "padding": {
-              "top": 18.0,
-              "right": 18.0,
-              "bottom": 18.0,
-              "left": 18.0
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
-            "fit": "scaleDown",
+            "fit": "cover",
             "width": 320,
             "height": 205,
-            "scale": 0.82
+            "scale": 1
           }
         ],
         "align": "center",
@@ -1783,6 +1783,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1812,11 +1816,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1826,6 +1826,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 5,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1939,12 +1942,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 5,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 4,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2069,10 +2072,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 4,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "topLeft",
@@ -2083,6 +2083,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2125,12 +2128,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2181,12 +2184,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2242,10 +2245,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -2266,6 +2266,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2295,11 +2299,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2309,6 +2309,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 7,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2680,13 +2684,19 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 7,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 3,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 10.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2742,17 +2752,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 3,
-            "padding": {
-              "top": 0.0,
-              "right": 0.0,
-              "bottom": 0.0,
-              "left": 10.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -2773,6 +2773,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2802,11 +2806,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2816,6 +2816,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2865,12 +2868,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2910,10 +2913,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "topLeft",
@@ -2924,6 +2924,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2963,12 +2966,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3008,12 +3011,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3053,10 +3056,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "topLeft",
@@ -3077,6 +3077,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3106,11 +3110,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -3120,6 +3120,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 5,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3281,12 +3284,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 5,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 5,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3620,10 +3623,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 5,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "topLeft",
@@ -3644,6 +3644,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3673,11 +3677,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -3687,6 +3687,16 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 3,
+            "padding": {
+              "top": 0.0,
+              "right": 8.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3802,20 +3812,10 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 3,
-            "padding": {
-              "top": 0.0,
-              "right": 8.0,
-              "bottom": 0.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 4,
             "padding": {
@@ -3825,16 +3825,16 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "cover",
             "scale": 1.08
           },
           {
-            "name": "showcaseMetric",
+            "type": "widget",
             "flex": 3,
             "scrollable": false,
-            "type": "widget",
+            "name": "showcaseMetric",
             "value": "01",
             "label": "Registered widget",
             "detail": "This single metric card is the deliberately custom extension point in the content deck.",
@@ -3860,7 +3860,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerLeft",
             "flex": 4,
             "margin": {
@@ -3876,12 +3876,22 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "cover",
             "scale": 1.24
           },
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 5,
+            "padding": {
+              "top": 0.0,
+              "right": 54.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3942,17 +3952,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 5,
-            "padding": {
-              "top": 0.0,
-              "right": 54.0,
-              "bottom": 0.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",

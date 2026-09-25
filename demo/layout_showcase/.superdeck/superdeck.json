@@ -10,7 +10,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### NATIVE AUTHORING / VISUAL PROOF\n\n# The system makes room.\n\n## Thirteen frames for layout, image control, and rich Markdown.\n\n**Sections. Blocks. Images. Type.** One coherent visual language.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 5,
             "padding": {
@@ -20,10 +20,10 @@
               "left": 34.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### NATIVE AUTHORING / VISUAL PROOF\n\n# The system makes room.\n\n## Thirteen frames for layout, image control, and rich Markdown.\n\n**Sections. Blocks. Images. Type.** One coherent visual language.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 6,
             "margin": {
@@ -39,7 +39,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1.04
@@ -63,7 +63,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 01 / PREDICTABLE GEOMETRY\n\n## The layout model explains itself.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "padding": {
@@ -73,7 +73,7 @@
               "left": 24.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 01 / PREDICTABLE GEOMETRY\n\n## The layout model explains itself.\n"
           }
         ],
         "flex": 1,
@@ -83,22 +83,22 @@
       {
         "blocks": [
           {
-            "content": "\n\n### SECTION = HEIGHT\n\nSections stack **vertically**. Their flex values decide how much of the slide each row receives.\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### SECTION = HEIGHT\n\nSections stack **vertically**. Their flex values decide how much of the slide each row receives.\n"
           },
           {
-            "content": "\n\n### 2×\n\nThis block gets twice the width of its neighbor.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### 2×\n\nThis block gets twice the width of its neighbor.\n"
           },
           {
-            "content": "\n\n### 1×\n\nThe ratio stays stable as the canvas scales.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### 1×\n\nThe ratio stays stable as the canvas scales.\n"
           }
         ],
         "align": "center",
@@ -109,23 +109,23 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### MARGIN\n\nSpace outside the framed block.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### MARGIN\n\nSpace outside the framed block.\n"
           },
           {
-            "content": "\n\n#### PADDING\n\nSpace inside the frame. **Decoration stays between them**, so the box model remains visible and teachable.\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### PADDING\n\nSpace inside the frame. **Decoration stays between them**, so the box model remains visible and teachable.\n"
           },
           {
-            "content": "#### ALIGN\n\nContent lands at any of nine anchor points.",
+            "type": "block",
             "align": "bottomRight",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "#### ALIGN\n\nContent lands at any of nine anchor points."
           }
         ],
         "align": "center",
@@ -146,11 +146,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 02 / SECTIONS + BLOCKS + IMAGES\n\n## Editorial, asymmetric, still deterministic.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 02 / SECTIONS + BLOCKS + IMAGES\n\n## Editorial, asymmetric, still deterministic.\n"
           }
         ],
         "flex": 1,
@@ -160,7 +160,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n### Build hierarchy before decoration.\n\nA strong composition begins with **one dominant relationship**. Here, a 4:7 split gives the image authority while the copy keeps a clear reading edge.\n\n- **Flex** sets the proportion.\n- **Spacing** creates the gutter.\n- **Alignment** pins the content.\n\n> The result feels art-directed because every constraint has a job.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 4,
             "padding": {
@@ -170,10 +170,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Build hierarchy before decoration.\n\nA strong composition begins with **one dominant relationship**. Here, a 4:7 split gives the image authority while the copy keeps a clear reading edge.\n\n- **Flex** sets the proportion.\n- **Spacing** creates the gutter.\n- **Alignment** pins the content.\n\n> The result feels art-directed because every constraint has a job.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 7,
             "margin": {
@@ -189,7 +189,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1.12
@@ -203,7 +203,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -219,12 +219,12 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "cover"
           },
           {
-            "content": "\n\n#### SECONDARY RHYTHM\n\nRepeated image frames can change proportion without changing the rules around them.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 4,
             "margin": {
@@ -240,10 +240,10 @@
               "left": 10.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### SECONDARY RHYTHM\n\nRepeated image frames can change proportion without changing the rules around them.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 2,
             "margin": {
@@ -259,7 +259,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "cover",
             "scale": 1.18
@@ -283,11 +283,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 03 / IMAGE FIT\n\n## Same source. Two honest choices.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 03 / IMAGE FIT\n\n## Same source. Two honest choices.\n"
           }
         ],
         "flex": 1,
@@ -297,16 +297,16 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### CONTAIN / FULL FRAME\n\n**Nothing is cropped.** Empty space is preserved.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### CONTAIN / FULL FRAME\n\n**Nothing is cropped.** Empty space is preserved.\n"
           },
           {
-            "content": "\n\n#### COVER / FULL BLEED\n\n**The frame is filled.** Edges are intentionally cropped.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### COVER / FULL BLEED\n\n**The frame is filled.** Edges are intentionally cropped.\n"
           }
         ],
         "align": "center",
@@ -317,7 +317,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "padding": {
@@ -327,14 +327,14 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "contain",
             "width": 560,
             "height": 420
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "padding": {
@@ -344,7 +344,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "width": 560,
@@ -369,11 +369,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 04 / SCALE + ALIGNMENT\n\n## Placement is a controlled variable.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 04 / SCALE + ALIGNMENT\n\n## Placement is a controlled variable.\n"
           }
         ],
         "flex": 1,
@@ -383,7 +383,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "topLeft",
             "flex": 1,
             "padding": {
@@ -393,13 +393,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "contain",
             "scale": 0.72
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "padding": {
@@ -409,13 +409,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "bottomRight",
             "flex": 1,
             "padding": {
@@ -425,7 +425,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
             "scale": 1.35
@@ -439,7 +439,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 72% / TOP LEFT\n\nFull image, deliberate quiet space.\n",
+            "type": "block",
             "flex": 1,
             "margin": {
               "top": 14.0,
@@ -448,10 +448,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 72% / TOP LEFT\n\nFull image, deliberate quiet space.\n"
           },
           {
-            "content": "\n\n#### 100% / CENTER\n\nThe reliable default crop.\n",
+            "type": "block",
             "flex": 1,
             "margin": {
               "top": 14.0,
@@ -460,10 +460,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 100% / CENTER\n\nThe reliable default crop.\n"
           },
           {
-            "content": "#### 135% / BOTTOM RIGHT\n\nAn intentional detail view.",
+            "type": "block",
             "flex": 1,
             "margin": {
               "top": 14.0,
@@ -472,7 +472,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "#### 135% / BOTTOM RIGHT\n\nAn intentional detail view."
           }
         ],
         "align": "topLeft",
@@ -493,11 +493,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 05 / FRAME SIZE + BLOCK MARGIN\n\n## Frame size is authored, not guessed.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 05 / FRAME SIZE + BLOCK MARGIN\n\n## Frame size is authored, not guessed.\n"
           }
         ],
         "flex": 1,
@@ -507,7 +507,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "margin": {
@@ -523,13 +523,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "cover",
             "scale": 1.06
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 1,
             "margin": {
@@ -545,12 +545,12 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 1,
             "margin": {
@@ -566,7 +566,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "cover",
             "scale": 1.14
@@ -580,22 +580,22 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### PORTRAIT / TALL\n\nHorizontal margin narrows the decorated image block.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### PORTRAIT / TALL\n\nHorizontal margin narrows the decorated image block.\n"
           },
           {
-            "content": "\n\n#### SQUARE / BALANCED\n\nTwo-axis margin creates a compact focal tile.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### SQUARE / BALANCED\n\nTwo-axis margin creates a compact focal tile.\n"
           },
           {
-            "content": "#### LANDSCAPE / WIDE\n\nVertical margin produces a cinematic banner.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "#### LANDSCAPE / WIDE\n\nVertical margin produces a cinematic banner."
           }
         ],
         "align": "topLeft",
@@ -607,7 +607,7 @@
     "comments": []
   },
   {
-    "key": "UFjcGQIQ",
+    "key": "X18HmHk2",
     "options": {
       "title": "Image treatment matrix",
       "style": "compact"
@@ -616,11 +616,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 06 / FIT + SURFACE TREATMENT\n\n## One image block can carry many behaviors.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 06 / FIT + SURFACE TREATMENT\n\n## One image block can carry many behaviors.\n"
           }
         ],
         "flex": 1,
@@ -630,7 +630,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### FIT WIDTH\n\n### Width leads.\n\nThe source fills the horizontal axis first.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -640,10 +640,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### FIT WIDTH\n\n### Width leads.\n\nThe source fills the horizontal axis first.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 4,
             "margin": {
@@ -659,14 +659,14 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "fitWidth",
             "width": 320,
             "height": 205
           },
           {
-            "content": "\n\n#### FIT HEIGHT\n\n### Height leads.\n\nPadding adds an inset inside the frame.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -676,10 +676,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### FIT HEIGHT\n\n### Height leads.\n\nPadding adds an inset inside the frame.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerRight",
             "flex": 4,
             "margin": {
@@ -695,7 +695,7 @@
               "left": 12.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "fitHeight",
             "width": 320,
@@ -710,7 +710,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### FILL\n\n### Frame leads.\n\nPixels stretch to occupy both axes.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -720,10 +720,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### FILL\n\n### Frame leads.\n\nPixels stretch to occupy both axes.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 4,
             "margin": {
@@ -739,14 +739,14 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "fill",
             "width": 320,
             "height": 205
           },
           {
-            "content": "\n\n#### SCALE DOWN\n\n### Source leads.\n\nMargin and padding create a floating study.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 2,
             "margin": {
@@ -756,31 +756,31 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### FULL BLEED\n\n### Frame leads.\n\nZero margin and padding let the image fill its card.\n"
           },
           {
-            "name": "image",
-            "align": "bottomRight",
+            "type": "widget",
+            "align": "center",
             "flex": 4,
             "margin": {
-              "top": 16.0,
-              "right": 8.0,
-              "bottom": 16.0,
-              "left": 8.0
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
             },
             "padding": {
-              "top": 18.0,
-              "right": 18.0,
-              "bottom": 18.0,
-              "left": 18.0
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
-            "fit": "scaleDown",
+            "fit": "cover",
             "width": 320,
             "height": 205,
-            "scale": 0.82
+            "scale": 1
           }
         ],
         "align": "center",
@@ -801,11 +801,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 07 / RICH MARKDOWN\n\n## The content model has range.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 07 / RICH MARKDOWN\n\n## The content model has range.\n"
           }
         ],
         "flex": 1,
@@ -815,16 +815,16 @@
       {
         "blocks": [
           {
-            "content": "\n\n### Inline hierarchy\n\n**Bold establishes consequence.** *Italic adds a second voice.* ~~Strikethrough retires the old idea.~~ A [link creates a path](https://superdeck.dev), and `inline code` names the mechanism.\n\n> Typography can carry structure before a single custom widget enters the frame.\n",
+            "type": "block",
             "flex": 5,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Inline hierarchy\n\n**Bold establishes consequence.** *Italic adds a second voice.* ~~Strikethrough retires the old idea.~~ A [link creates a path](https://superdeck.dev), and `inline code` names the mechanism.\n\n> Typography can carry structure before a single custom widget enters the frame.\n"
           },
           {
-            "content": "\n\n### List rhythm\n\n- **Lead** with the decision.\n- *Qualify* it with context.\n- Use `code` for exact syntax.\n\n1. Establish the frame.\n2. Repeat the cadence.\n3. Break the pattern once.\n",
+            "type": "block",
             "flex": 4,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### List rhythm\n\n- **Lead** with the decision.\n- *Qualify* it with context.\n- Use `code` for exact syntax.\n\n1. Establish the frame.\n2. Repeat the cadence.\n3. Break the pattern once.\n"
           }
         ],
         "align": "topLeft",
@@ -835,22 +835,22 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### STRONG\n\n**Make the signal unmistakable.**\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### STRONG\n\n**Make the signal unmistakable.**\n"
           },
           {
-            "content": "\n\n#### EMPHASIS\n\n*Change the tone without changing size.*\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### EMPHASIS\n\n*Change the tone without changing size.*\n"
           },
           {
-            "content": "#### LINK + CODE\n\n[Open the docs](https://superdeck.dev) or use `@section`.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "#### LINK + CODE\n\n[Open the docs](https://superdeck.dev) or use `@section`."
           }
         ],
         "align": "center",
@@ -871,11 +871,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 08 / TABLES\n\n## Dense information can still breathe.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 08 / TABLES\n\n## Dense information can still breathe.\n"
           }
         ],
         "flex": 1,
@@ -885,14 +885,14 @@
       {
         "blocks": [
           {
-            "content": "\n\n| Layout signal | Before | After | Movement |\n| :-- | --: | --: | --: |\n| Time to first read | 8.4 s | **2.6 s** | **−69%** |\n| Competing focal points | 7 | **2** | **−71%** |\n| Grid exceptions | 12 | **1** | **−92%** |\n| Review confidence | 54% | **91%** | **+37 pt** |\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 7,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n| Layout signal | Before | After | Movement |\n| :-- | --: | --: | --: |\n| Time to first read | 8.4 s | **2.6 s** | **−69%** |\n| Competing focal points | 7 | **2** | **−71%** |\n| Grid exceptions | 12 | **1** | **−92%** |\n| Review confidence | 54% | **91%** | **+37 pt** |\n"
           },
           {
-            "content": "#### THE READING\n\n## 3.2×\n\nfaster orientation after the hierarchy was simplified.\n\n> A table earns attention when the comparison—not the border—is the story.",
+            "type": "block",
             "align": "centerLeft",
             "flex": 3,
             "padding": {
@@ -902,7 +902,7 @@
               "left": 10.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "#### THE READING\n\n## 3.2×\n\nfaster orientation after the hierarchy was simplified.\n\n> A table earns attention when the comparison—not the border—is the story."
           }
         ],
         "align": "center",
@@ -923,11 +923,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 09 / GITHUB ALERTS\n\n## Guidance with the right degree of urgency.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 09 / GITHUB ALERTS\n\n## Guidance with the right degree of urgency.\n"
           }
         ],
         "flex": 1,
@@ -937,16 +937,16 @@
       {
         "blocks": [
           {
-            "content": "\n\n> [!NOTE]\n> **Sections own height.** Blocks inside them divide the available width.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n> [!NOTE]\n> **Sections own height.** Blocks inside them divide the available width.\n"
           },
           {
-            "content": "\n\n> [!TIP]\n> Reuse a stable spacing rhythm, then change only the value that carries meaning.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n> [!TIP]\n> Reuse a stable spacing rhythm, then change only the value that carries meaning.\n"
           }
         ],
         "align": "topLeft",
@@ -957,22 +957,22 @@
       {
         "blocks": [
           {
-            "content": "\n\n> [!IMPORTANT]\n> Keep the focal relationship obvious at thumbnail size and at full screen.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n> [!IMPORTANT]\n> Keep the focal relationship obvious at thumbnail size and at full screen.\n"
           },
           {
-            "content": "\n\n> [!WARNING]\n> Paint-only image scale can crop beyond its original fit. Review the final frame.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n> [!WARNING]\n> Paint-only image scale can crop beyond its original fit. Review the final frame.\n"
           },
           {
-            "content": "> [!CAUTION]\n> Do not hide critical state in color alone. Pair the accent with a clear label.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "> [!CAUTION]\n> Do not hide critical state in color alone. Pair the accent with a clear label."
           }
         ],
         "align": "topLeft",
@@ -993,11 +993,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 10 / INDICATORS\n\n## Status should scan before it explains.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 10 / INDICATORS\n\n## Status should scan before it explains.\n"
           }
         ],
         "flex": 1,
@@ -1007,16 +1007,16 @@
       {
         "blocks": [
           {
-            "content": "\n\n### Release readiness\n\n- [x] Layout contract locked\n- [x] Image crops reviewed\n- [x] Contrast checked at 1280 × 720\n- [ ] Speaker notes approved\n- [ ] Final export published\n\n> **3 / 5 complete.** The remaining work is visible without opening another tool.\n",
+            "type": "block",
             "flex": 5,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Release readiness\n\n- [x] Layout contract locked\n- [x] Image crops reviewed\n- [x] Contrast checked at 1280 × 720\n- [ ] Speaker notes approved\n- [ ] Final export published\n\n> **3 / 5 complete.** The remaining work is visible without opening another tool.\n"
           },
           {
-            "content": "### Signal board\n\n| Workstream | State | Owner |\n| :-- | :-- | :-- |\n| Layout | **● READY** | Design |\n| Content | **● REVIEW** | Editorial |\n| Capture | **● READY** | QA |\n| Export | **○ QUEUED** | Release |\n\n**READY** means verified. *REVIEW* means a decision remains. `QUEUED` means the path is known.",
+            "type": "block",
             "flex": 5,
             "scrollable": false,
-            "type": "block"
+            "content": "### Signal board\n\n| Workstream | State | Owner |\n| :-- | :-- | :-- |\n| Layout | **● READY** | Design |\n| Content | **● REVIEW** | Editorial |\n| Capture | **● READY** | QA |\n| Export | **○ QUEUED** | Release |\n\n**READY** means verified. *REVIEW* means a decision remains. `QUEUED` means the path is known."
           }
         ],
         "align": "topLeft",
@@ -1037,11 +1037,11 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### 11 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED\n\n## One escape hatch, clearly bounded.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### 11 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED\n\n## One escape hatch, clearly bounded.\n"
           }
         ],
         "flex": 1,
@@ -1051,7 +1051,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### BUILT-IN AUTHORING\n\n### Most of this deck is only three primitives.\n\n- `@section` for vertical rhythm\n- `@block` for Markdown content\n- `@image` for visual media\n\n**No custom content widget is required** for the layouts, tables, alerts, checklists, or image studies.\n",
+            "type": "block",
             "align": "centerLeft",
             "flex": 3,
             "padding": {
@@ -1061,10 +1061,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### BUILT-IN AUTHORING\n\n### Most of this deck is only three primitives.\n\n- `@section` for vertical rhythm\n- `@block` for Markdown content\n- `@image` for visual media\n\n**No custom content widget is required** for the layouts, tables, alerts, checklists, or image studies.\n"
           },
           {
-            "name": "image",
+            "type": "widget",
             "align": "center",
             "flex": 4,
             "padding": {
@@ -1074,16 +1074,16 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/material_detail.png",
             "fit": "cover",
             "scale": 1.08
           },
           {
-            "name": "showcaseMetric",
+            "type": "widget",
             "flex": 3,
             "scrollable": false,
-            "type": "widget",
+            "name": "showcaseMetric",
             "value": "01",
             "label": "Registered widget",
             "detail": "This single metric card is the deliberately custom extension point in the content deck.",
@@ -1109,7 +1109,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "align": "centerLeft",
             "flex": 4,
             "margin": {
@@ -1125,13 +1125,13 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "layout_showcase/assets/momentum_ribbon.png",
             "fit": "cover",
             "scale": 1.24
           },
           {
-            "content": "#### 12 / THE OUTCOME\n\n# Built to be seen.\n\n## Every frame can be authored, inspected, and captured.\n\n**Native layouts. Rich Markdown. Controlled imagery.** One bounded widget extension and three original image assets.",
+            "type": "block",
             "align": "centerLeft",
             "flex": 5,
             "padding": {
@@ -1141,7 +1141,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "#### 12 / THE OUTCOME\n\n# Built to be seen.\n\n## Every frame can be authored, inspected, and captured.\n\n**Native layouts. Rich Markdown. Controlled imagery.** One bounded widget extension and three original image assets."
           }
         ],
         "align": "center",
