@@ -422,7 +422,7 @@
     "comments": []
   },
   {
-    "key": "7BuNcOQM",
+    "key": "LQmwzcJ0",
     "options": {
       "title": "Asymmetric composition",
       "style": "compact"
@@ -615,9 +615,9 @@
             "align": "centerRight",
             "flex": 7,
             "margin": {
-              "top": 6.0,
+              "top": 10.0,
               "right": 0.0,
-              "bottom": 6.0,
+              "bottom": 10.0,
               "left": 0.0
             },
             "padding": {
@@ -630,7 +630,7 @@
             "name": "image",
             "src": "layout_showcase/assets/architectural_steps.png",
             "fit": "cover",
-            "scale": 1.12
+            "scale": 1
           }
         ],
         "align": "center",

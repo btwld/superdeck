@@ -138,11 +138,11 @@ A strong composition begins with **one dominant relationship**. Here, a 4:7 spli
 @image {
   src: layout_showcase/assets/architectural_steps.png
   fit: cover
-  scale: 1.12
+  scale: 1
   flex: 7
   align: centerRight
   padding: 0
-  margin: { vertical: 6 }
+  margin: { vertical: 10 }
 }
 
 @section {

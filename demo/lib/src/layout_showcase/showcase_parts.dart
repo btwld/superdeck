@@ -9,10 +9,7 @@ class ShowcaseBackground extends StatelessWidget {
   static const _accents = [
     Color(0xFFFF7A59),
     Color(0xFF8B7CFF),
-    Color(0xFFFFB15A),
-    Color(0xFFDF6FFF),
     Color(0xFF58D5C9),
-    Color(0xFFFF876B),
   ];
 
   @override
@@ -77,7 +74,7 @@ class ShowcaseFooter extends StatelessWidget implements PreferredSizeWidget {
           const Text(
             'SUPERDECK  /  LAYOUT STUDY',
             style: TextStyle(
-              color: Color(0xFF77737D),
+              color: Color(0xFFA6A1AA),
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 2.2,
