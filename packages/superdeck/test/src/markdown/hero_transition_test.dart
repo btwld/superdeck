@@ -553,12 +553,15 @@ void main() {
       tester.getSize(find.byKey(const ValueKey('image-hero-flight'))),
       const Size(180, 120),
     );
-    expect(
-      tester
-          .widget<SizedBox>(find.byKey(const ValueKey('image-hero-flight')))
-          .child,
-      same(to.flightImage),
+    final flight = tester.widget<SizedBox>(
+      find.byKey(const ValueKey('image-hero-flight')),
     );
+    final blend = flight.child! as Stack;
+    expect(blend.children, hasLength(2));
+    expect((blend.children[0] as Opacity).child, same(from.flightImage));
+    expect((blend.children[0] as Opacity).opacity, 0.5);
+    expect((blend.children[1] as Opacity).child, same(to.flightImage));
+    expect((blend.children[1] as Opacity).opacity, 0.5);
     expect(tester.takeException(), isNull);
   });
 

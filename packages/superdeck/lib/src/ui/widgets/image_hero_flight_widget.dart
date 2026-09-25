@@ -54,12 +54,14 @@ class ImageHeroFlight extends StatelessWidget {
       // Hero's overlay already interpolates the measured endpoint rectangles.
       // A second size tween from block dimensions is wrong for intrinsically sized
       // images and images with only one explicit dimension.
-      final sameUri = from.uri == to.uri;
-      final endpoint = to.flightImage ?? from.flightImage;
+      final canReuseSource =
+          from.uri == to.uri &&
+          from.flightImage == null &&
+          to.flightImage == null;
       return SizedBox.expand(
         key: const ValueKey('image-hero-flight'),
-        child: sameUri
-            ? endpoint ?? _image(from, spec)
+        child: canReuseSource
+            ? _image(from, spec)
             : Stack(
                 fit: StackFit.expand,
                 children: [

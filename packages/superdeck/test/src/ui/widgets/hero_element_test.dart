@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
+import 'package:superdeck/src/ui/widgets/text_hero_flight.dart';
 
 /// Regression coverage for the "text size pops at the start/end of a hero
 /// transition" bug.
@@ -19,27 +20,11 @@ void main() {
   );
   const text = 'Heading Sample';
   const routeKey = ValueKey('route-text');
-  const shuttleKey = ValueKey('shuttle-text');
-
-  Widget heroWidget() => HeroElement<String>(
-    data: text,
-    child: buildElementHero<String>(
-      tag: 'h',
-      // Mirrors StyledText -> Text(text, style: spec.style).
-      child: const Text(text, style: headingStyle, key: routeKey),
-      flightShuttleBuilder:
-          (context, animation, direction, fromContext, toContext) {
-            // Mirrors TextElementBuilder._buildStableFlight at a flight endpoint.
-            return Text.rich(
-              TextSpan(
-                style: headingStyle,
-                children: [TextSpan(text: text)],
-              ),
-              style: DefaultTextStyle.of(fromContext).style,
-              key: shuttleKey,
-            );
-          },
-    ),
+  Widget heroWidget() => buildElementHero<String>(
+    tag: 'h',
+    // Mirrors StyledText -> Text(text, style: spec.style).
+    child: const Text(text, style: headingStyle, key: routeKey),
+    flightShuttleBuilder: buildTextHeroFlight,
   );
 
   testWidgets(
@@ -66,10 +51,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1)); // first flight frame
 
       final shuttlePara = tester.renderObject<RenderParagraph>(
-        find.descendant(
-          of: find.byKey(shuttleKey),
-          matching: find.byType(RichText),
-        ),
+        find
+            .descendant(
+              of: find.byType(FittedBox),
+              matching: find.byType(RichText),
+            )
+            .first,
       );
       final shuttleWidth = shuttlePara.getMaxIntrinsicWidth(double.infinity);
       final shuttleHeight = shuttlePara.getMinIntrinsicHeight(double.infinity);
