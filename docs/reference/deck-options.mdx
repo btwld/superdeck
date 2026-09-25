@@ -219,7 +219,9 @@ Pairs standalone Markdown images and `@image` blocks by order across
 consecutive slides so they animate through Hero transitions. Images nested in
 blockquotes, alerts, or list items do not take part. Set it to `false` to turn
 automatic image transitions off for the whole deck. Explicit Markdown Hero tags,
-such as `![Diagram](assets/roadmap.png) {.hero-visual}`, are unaffected.
+such as `![Diagram](assets/roadmap.png) {.hero-visual}`, are unaffected. When
+paired images share a source, the flight keeps one continuous image; different
+sources cross-fade between the two endpoints.
 
 ```dart
 DeckOptions(
