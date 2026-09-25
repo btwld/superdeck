@@ -138,11 +138,11 @@ A strong composition begins with **one dominant relationship**. Here, a 4:7 spli
 @image {
   src: layout_showcase/assets/architectural_steps.png
   fit: cover
-  scale: 1.12
+  scale: 1
   flex: 7
   align: centerRight
   padding: 0
-  margin: { vertical: 6 }
+  margin: { vertical: 10 }
 }
 
 @section {
@@ -489,22 +489,22 @@ Pixels stretch to occupy both axes.
   margin: { vertical: 16 }
 }
 
-#### SCALE DOWN
+#### FULL BLEED
 
-### Source leads.
+### Frame leads.
 
-Margin and padding create a floating study.
+Zero margin and padding let the image fill its card.
 
 @image {
   src: layout_showcase/assets/material_detail.png
-  fit: scaleDown
+  fit: cover
   width: 320
   height: 205
-  scale: 0.82
+  scale: 1
   flex: 4
-  align: bottomRight
-  padding: 18
-  margin: { horizontal: 8, vertical: 16 }
+  align: center
+  padding: 0
+  margin: 0
 }
 
 ---

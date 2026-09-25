@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
+import 'package:superdeck/src/ui/widgets/text_hero_flight.dart';
 
 /// Regression coverage for the "text size pops at the start/end of a hero
 /// transition" bug.
 ///
-/// `buildElementHero` renders the flight shuttle inside the Navigator's
-/// `Overlay`, which sits outside the route's `Material` and so exposes a
-/// different `DefaultTextStyle` than the slide. Text properties an element
-/// spec leaves unset (`letterSpacing`, `leadingDistribution`, ...) resolve
-/// against that ambient style, so the shuttle used to render the text at a
-/// different size than the real widget — a visible pop at the flight handoff.
+/// A flight shuttle must resolve its own text style because it is built inside
+/// the Navigator's Overlay, outside the route's Material.
 void main() {
   // A heading-like style (mirrors default_style.dart): sets the obvious
   // properties but leaves letterSpacing / leadingDistribution unset so they
@@ -23,26 +20,11 @@ void main() {
   );
   const text = 'Heading Sample';
   const routeKey = ValueKey('route-text');
-  const shuttleKey = ValueKey('shuttle-text');
-
-  Widget heroWidget() => HeroElement<String>(
-    data: text,
-    child: buildElementHero<String>(
-      tag: 'h',
-      // Mirrors StyledText -> Text(text, style: spec.style).
-      child: const Text(text, style: headingStyle, key: routeKey),
-      buildFlight: (context, from, to, t) {
-        // Mirrors TextElementBuilder._buildStableFlight at a flight endpoint:
-        // a bare Text.rich with no `style:` argument.
-        return const Text.rich(
-          TextSpan(
-            style: headingStyle,
-            children: [TextSpan(text: text)],
-          ),
-          key: shuttleKey,
-        );
-      },
-    ),
+  Widget heroWidget() => buildElementHero<String>(
+    tag: 'h',
+    // Mirrors StyledText -> Text(text, style: spec.style).
+    child: const Text(text, style: headingStyle, key: routeKey),
+    flightShuttleBuilder: buildTextHeroFlight,
   );
 
   testWidgets(
@@ -69,10 +51,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1)); // first flight frame
 
       final shuttlePara = tester.renderObject<RenderParagraph>(
-        find.descendant(
-          of: find.byKey(shuttleKey),
-          matching: find.byType(RichText),
-        ),
+        find
+            .descendant(
+              of: find.byType(FittedBox),
+              matching: find.byType(RichText),
+            )
+            .first,
       );
       final shuttleWidth = shuttlePara.getMaxIntrinsicWidth(double.infinity);
       final shuttleHeight = shuttlePara.getMinIntrinsicHeight(double.infinity);

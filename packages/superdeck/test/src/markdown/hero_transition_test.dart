@@ -9,7 +9,7 @@ import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/styling/default_style.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
-import 'package:superdeck/src/ui/widgets/image_hero_flight.dart';
+import 'package:superdeck/src/ui/widgets/image_hero_flight_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -232,6 +232,12 @@ void main() {
     await tester.pump(_transitionDuration ~/ 2);
 
     expect(tester.takeException(), isNull);
+    expect(
+      tester
+          .widget<SizedBox>(find.byKey(const ValueKey('image-hero-flight')))
+          .child,
+      isA<CachedImage>(),
+    );
 
     await tester.pumpAndSettle();
 
@@ -506,18 +512,40 @@ void main() {
       size: const Size(240, 540),
       flightImage: const ColoredBox(color: Colors.blue),
     );
+    final fromKey = GlobalKey();
+    final toKey = GlobalKey();
     await tester.pumpWidget(
       MaterialApp(
-        home: Center(
-          child: SizedBox(
-            width: 180,
-            height: 120,
-            child: Builder(
-              builder: (context) =>
-                  buildImageHeroFlight(context, from, to, 0.5),
+        home: Column(
+          children: [
+            HeroElement<ImageElement>(
+              data: from,
+              child: Builder(
+                key: fromKey,
+                builder: (_) => const SizedBox.shrink(),
+              ),
             ),
-          ),
+            HeroElement<ImageElement>(
+              data: to,
+              child: Builder(
+                key: toKey,
+                builder: (_) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+    final shuttle = ImageHeroFlight(
+      toKey.currentContext!,
+      const AlwaysStoppedAnimation<double>(0.5),
+      HeroFlightDirection.push,
+      fromKey.currentContext!,
+      toKey.currentContext!,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(child: SizedBox(width: 180, height: 120, child: shuttle)),
       ),
     );
 
@@ -525,6 +553,15 @@ void main() {
       tester.getSize(find.byKey(const ValueKey('image-hero-flight'))),
       const Size(180, 120),
     );
+    final flight = tester.widget<SizedBox>(
+      find.byKey(const ValueKey('image-hero-flight')),
+    );
+    final blend = flight.child! as Stack;
+    expect(blend.children, hasLength(2));
+    expect((blend.children[0] as Opacity).child, same(from.flightImage));
+    expect((blend.children[0] as Opacity).opacity, 0.5);
+    expect((blend.children[1] as Opacity).child, same(to.flightImage));
+    expect((blend.children[1] as Opacity).opacity, 0.5);
     expect(tester.takeException(), isNull);
   });
 

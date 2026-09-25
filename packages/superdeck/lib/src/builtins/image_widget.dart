@@ -10,7 +10,7 @@ import '../rendering/blocks/block_provider.dart';
 import '../rendering/blocks/image_hero_positions.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../ui/widgets/hero_element.dart';
-import '../ui/widgets/image_hero_flight.dart';
+import '../ui/widgets/image_hero_flight_widget.dart';
 import '../ui/widgets/provider.dart';
 import '../ui/widgets/resolved_asset_image.dart';
 import '../utils/converters.dart';
@@ -171,7 +171,7 @@ class ImageWidget extends StatelessWidget {
       child: buildElementHero<ImageElement>(
         tag: automaticImageHeroTag(block.imageHeroStart),
         child: image,
-        buildFlight: buildImageHeroFlight,
+        flightShuttleBuilder: ImageHeroFlight.new,
       ),
     );
   }
