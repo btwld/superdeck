@@ -171,7 +171,7 @@ class ImageWidget extends StatelessWidget {
       child: buildElementHero<ImageElement>(
         tag: automaticImageHeroTag(block.imageHeroStart),
         child: image,
-        flightShuttleBuilder: ImageHeroFlight.buildShuttle,
+        flightShuttleBuilder: ImageHeroFlight.new,
       ),
     );
   }

@@ -232,6 +232,12 @@ void main() {
     await tester.pump(_transitionDuration ~/ 2);
 
     expect(tester.takeException(), isNull);
+    expect(
+      tester
+          .widget<SizedBox>(find.byKey(const ValueKey('image-hero-flight')))
+          .child,
+      isA<CachedImage>(),
+    );
 
     await tester.pumpAndSettle();
 
@@ -506,27 +512,52 @@ void main() {
       size: const Size(240, 540),
       flightImage: const ColoredBox(color: Colors.blue),
     );
+    final fromKey = GlobalKey();
+    final toKey = GlobalKey();
     await tester.pumpWidget(
       MaterialApp(
-        home: Center(
-          child: SizedBox(
-            width: 180,
-            height: 120,
-            child: Builder(
-              builder: (context) => ImageHeroFlight(
-                from: from,
-                to: to,
-                animation: const AlwaysStoppedAnimation<double>(0.5),
+        home: Column(
+          children: [
+            HeroElement<ImageElement>(
+              data: from,
+              child: Builder(
+                key: fromKey,
+                builder: (_) => const SizedBox.shrink(),
               ),
             ),
-          ),
+            HeroElement<ImageElement>(
+              data: to,
+              child: Builder(
+                key: toKey,
+                builder: (_) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+    final shuttle = ImageHeroFlight(
+      toKey.currentContext!,
+      const AlwaysStoppedAnimation<double>(0.5),
+      HeroFlightDirection.push,
+      fromKey.currentContext!,
+      toKey.currentContext!,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(child: SizedBox(width: 180, height: 120, child: shuttle)),
       ),
     );
 
     expect(
       tester.getSize(find.byKey(const ValueKey('image-hero-flight'))),
       const Size(180, 120),
+    );
+    expect(
+      tester
+          .widget<SizedBox>(find.byKey(const ValueKey('image-hero-flight')))
+          .child,
+      same(to.flightImage),
     );
     expect(tester.takeException(), isNull);
   });

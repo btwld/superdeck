@@ -106,7 +106,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
           size: totalSize,
           flightImage: image,
         ),
-        flightShuttleBuilder: ImageHeroFlight.buildShuttle,
+        flightShuttleBuilder: ImageHeroFlight.new,
       );
     }
 
@@ -122,7 +122,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
           child: imageWidget,
           heroTag: heroTag,
           heroData: ImageElement(spec: spec, uri: uri, size: totalSize),
-          flightShuttleBuilder: ImageHeroFlight.buildShuttle,
+          flightShuttleBuilder: ImageHeroFlight.new,
         );
       },
       styleSpec: styleSpec,

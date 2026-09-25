@@ -10,15 +10,8 @@ class ImageHeroFlight extends StatelessWidget {
   final ImageElement to;
   final Animation<double> animation;
 
-  const ImageHeroFlight({
-    super.key,
-    required this.from,
-    required this.to,
-    required this.animation,
-  });
-
-  /// Adapts Flutter's Hero endpoints and flight direction to this widget.
-  static Widget buildShuttle(
+  /// Builds the shuttle directly from Flutter's Hero flight arguments.
+  factory ImageHeroFlight(
     BuildContext context,
     Animation<double> animation,
     HeroFlightDirection direction,
@@ -27,7 +20,7 @@ class ImageHeroFlight extends StatelessWidget {
   ) {
     final to = HeroElement.of<ImageElement>(toContext);
     final from = HeroElement.maybeOf<ImageElement>(fromContext) ?? to;
-    return ImageHeroFlight(
+    return ImageHeroFlight._(
       from: from,
       to: to,
       animation: direction == HeroFlightDirection.push
@@ -35,6 +28,12 @@ class ImageHeroFlight extends StatelessWidget {
           : ReverseAnimation(animation),
     );
   }
+
+  const ImageHeroFlight._({
+    required this.from,
+    required this.to,
+    required this.animation,
+  });
 
   Widget _image(ImageElement element, ImageSpec spec) =>
       element.flightImage ??
