@@ -35,15 +35,15 @@ dependencies:
   superdeck_builder: ^1.0.0
   # AI generation
   genui: ^0.9.2
-  googleai_dart: ^9.0.0
-  google_cloud_ai_generativelanguage_v1beta: ^0.5.2
+  googleai_dart: ^13.0.0
+  google_cloud_ai_generativelanguage_v1beta: ^0.5.6
   dotprompt_dart: ^0.5.0
   path: ^1.9.0
   ack: ^1.6.2
   ack_annotations: ^1.6.2
   ack_json_schema_builder: ^1.6.2
   dartantic_ai: ^3.1.0
-  json_schema_builder: ^0.1.5
+  json_schema_builder: ^0.1.7
   # Deck export: a zip written through the platform save dialog.
   archive: ^4.0.9
   file_saver: ^0.4.0

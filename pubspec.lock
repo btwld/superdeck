@@ -707,10 +707,10 @@ packages:
     dependency: transitive
     description:
       name: googleai_dart
-      sha256: "58c628b8b96ffff9d8a80e23ef7d2813ad38c0b48360a9c84e7234f15a8098de"
+      sha256: d2f4a2d10b017b4894d86958fde0aaac813568d00df6b9882a2ed877e7df724a
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "13.0.0"
   googleapis_auth:
     dependency: transitive
     description:
