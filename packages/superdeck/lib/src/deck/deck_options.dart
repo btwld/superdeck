@@ -18,6 +18,11 @@ class DeckOptions {
   final SlideParts parts;
   final bool debug;
 
+  /// Pairs standalone Markdown images and `@image` blocks by order across
+  /// consecutive slides so they animate through Hero transitions. Explicit
+  /// Markdown Hero tags are unaffected.
+  final bool animateImages;
+
   /// Named slide templates that bundle chrome + style systems.
   final Map<String, SlideTemplate> templates;
 
@@ -33,6 +38,7 @@ class DeckOptions {
     Map<String, WidgetFactory> widgets = const <String, WidgetFactory>{},
     this.parts = const SlideParts(),
     this.debug = false,
+    this.animateImages = true,
     Map<String, SlideTemplate> templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
   }) : styles = Map.unmodifiable(styles),
@@ -45,6 +51,7 @@ class DeckOptions {
     Map<String, WidgetFactory>? widgets,
     SlideParts? parts,
     bool? debug,
+    bool? animateImages,
     Map<String, SlideTemplate>? templates,
     Object? defaultTemplate = _undefined,
   }) {
@@ -56,6 +63,7 @@ class DeckOptions {
       widgets: widgets ?? this.widgets,
       parts: parts ?? this.parts,
       debug: debug ?? this.debug,
+      animateImages: animateImages ?? this.animateImages,
       templates: templates ?? this.templates,
       defaultTemplate: identical(defaultTemplate, _undefined)
           ? this.defaultTemplate
@@ -73,6 +81,7 @@ class DeckOptions {
             _widgetsEquality.equals(widgets, other.widgets) &&
             parts == other.parts &&
             debug == other.debug &&
+            animateImages == other.animateImages &&
             _templatesEquality.equals(templates, other.templates) &&
             defaultTemplate == other.defaultTemplate;
   }
@@ -84,6 +93,7 @@ class DeckOptions {
     _widgetsEquality.hash(widgets),
     parts,
     debug,
+    animateImages,
     _templatesEquality.hash(templates),
     defaultTemplate,
   );
@@ -92,6 +102,7 @@ class DeckOptions {
   String toString() {
     return 'DeckOptions(baseStyle: $baseStyle, styles: $styles, '
         'widgets: $widgets, parts: $parts, debug: $debug, '
-        'templates: $templates, defaultTemplate: $defaultTemplate)';
+        'animateImages: $animateImages, templates: $templates, '
+        'defaultTemplate: $defaultTemplate)';
   }
 }

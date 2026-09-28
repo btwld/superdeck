@@ -23,6 +23,22 @@ void main() {
       });
     });
 
+    group('animateImages', () {
+      test('defaults to true', () {
+        expect(DeckOptions().animateImages, isTrue);
+      });
+
+      test('copyWith round-trips and participates in equality', () {
+        final options = DeckOptions();
+        final disabled = options.copyWith(animateImages: false);
+
+        expect(disabled.animateImages, isFalse);
+        expect(disabled.copyWith().animateImages, isFalse);
+        expect(disabled.copyWith(animateImages: true), equals(options));
+        expect(disabled, isNot(equals(options)));
+      });
+    });
+
     group('unmodifiable collections', () {
       test(
         'modifying original map after construction does not affect stored map',

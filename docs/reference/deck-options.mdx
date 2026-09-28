@@ -16,6 +16,7 @@ DeckOptions({
   Map<String, WidgetFactory> widgets = const {},
   SlideParts parts = const SlideParts(),
   bool debug = false,
+  bool animateImages = true,
   Map<String, SlideTemplate> templates = const {},
   SlideTemplate? defaultTemplate,
 });
@@ -211,6 +212,21 @@ DeckOptions(
 )
 ```
 
+### `animateImages`
+**Type:** `bool` | **Default:** `true`
+
+Pairs standalone Markdown images and `@image` blocks by order across
+consecutive slides so they animate through Hero transitions. Images nested in
+blockquotes, alerts, or list items do not take part. Set it to `false` to turn
+automatic image transitions off for the whole deck. Explicit Markdown Hero tags,
+such as `![Diagram](assets/roadmap.png) {.hero-visual}`, are unaffected.
+
+```dart
+DeckOptions(
+  animateImages: false,
+)
+```
+
 ### `templates`
 **Type:** `Map<String, SlideTemplate>` | **Default:** `{}`
 
@@ -300,6 +316,9 @@ class MyApp extends StatelessWidget {
 
         // Debug mode for development
         debug: kDebugMode,
+
+        // Automatic image transitions between slides (on by default)
+        animateImages: true,
       ),
     );
   }

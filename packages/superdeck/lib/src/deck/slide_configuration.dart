@@ -17,6 +17,9 @@ class SlideConfiguration {
   final SlideStyler style;
   final Slide slide;
   final bool debug;
+
+  /// Whether untagged standalone images take automatic Hero positions.
+  final bool animateImages;
   final SlideParts? parts;
   final Map<String, WidgetFactory> widgets;
   // Runtime thumbnail cache key (for example: thumbnail_intro.png).
@@ -34,6 +37,7 @@ class SlideConfiguration {
     required this.style,
     required this.slide,
     this.debug = false,
+    this.animateImages = true,
     this.parts,
     required this.thumbnailKey,
     this.widgets = const {},
@@ -46,6 +50,7 @@ class SlideConfiguration {
     SlideStyler? style,
     Slide? slide,
     bool? debug,
+    bool? animateImages,
     Object? parts = _undefined,
     Map<String, WidgetFactory>? widgets,
     String? thumbnailKey,
@@ -57,6 +62,7 @@ class SlideConfiguration {
       style: style ?? this.style,
       slide: slide ?? this.slide,
       debug: debug ?? this.debug,
+      animateImages: animateImages ?? this.animateImages,
       parts: identical(parts, _undefined) ? this.parts : parts as SlideParts?,
       widgets: widgets ?? this.widgets,
       thumbnailKey: thumbnailKey ?? this.thumbnailKey,
@@ -90,6 +96,7 @@ class SlideConfiguration {
           style == other.style &&
           slide == other.slide &&
           debug == other.debug &&
+          animateImages == other.animateImages &&
           parts == other.parts &&
           thumbnailKey == other.thumbnailKey &&
           widgets == other.widgets &&
@@ -102,6 +109,7 @@ class SlideConfiguration {
     style,
     slide,
     debug,
+    animateImages,
     parts,
     thumbnailKey,
     widgets,
@@ -112,7 +120,8 @@ class SlideConfiguration {
   @override
   String toString() {
     return 'SlideConfiguration(slideIndex: $slideIndex, style: $style, '
-        'slide: $slide, debug: $debug, parts: $parts, widgets: $widgets, '
+        'slide: $slide, debug: $debug, animateImages: $animateImages, '
+        'parts: $parts, widgets: $widgets, '
         'thumbnailKey: $thumbnailKey, isStaticRendering: $isStaticRendering, '
         'assetCacheStore: $assetCacheStore)';
   }

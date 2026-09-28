@@ -13,6 +13,7 @@ import '../../ui/widgets/provider.dart';
 import '../../utils/converters.dart';
 import '../layout_debug_overlay.dart';
 import 'block_provider.dart';
+import 'image_hero_positions.dart';
 import 'markdown_viewer.dart';
 
 /// Private container widget that provides shared block infrastructure.
@@ -24,6 +25,7 @@ class _BlockContainer extends StatefulWidget {
     required this.align,
     required this.configuration,
     required this.runtimeKey,
+    required this.imageHeroStart,
     required this.child,
   });
 
@@ -31,6 +33,7 @@ class _BlockContainer extends StatefulWidget {
   final ContentAlignment align;
   final SlideConfiguration configuration;
   final String runtimeKey;
+  final int imageHeroStart;
   final Widget child;
 
   @override
@@ -112,6 +115,7 @@ class _BlockContainerState extends State<_BlockContainer> {
             spec: spec,
             size: constraints.biggest,
             runtimeKey: widget.runtimeKey,
+            imageHeroStart: widget.imageHeroStart,
           );
 
           Widget innerContent = widget.child;
@@ -270,12 +274,14 @@ class BlockWidget extends StatelessWidget {
     required this.align,
     required this.configuration,
     required this.runtimeKey,
+    required this.imageHeroStart,
   });
 
   final ContentBlock block;
   final ContentAlignment align;
   final SlideConfiguration configuration;
   final String runtimeKey;
+  final int imageHeroStart;
 
   @override
   Widget build(BuildContext context) {
@@ -284,6 +290,7 @@ class BlockWidget extends StatelessWidget {
       align: align,
       configuration: configuration,
       runtimeKey: runtimeKey,
+      imageHeroStart: imageHeroStart,
       child: _ContentBlockChild(
         content: block.content,
         allowVerticalOverflow:
@@ -301,12 +308,14 @@ class CustomBlockWidget extends StatelessWidget {
     required this.align,
     required this.configuration,
     required this.runtimeKey,
+    required this.imageHeroStart,
   });
 
   final WidgetBlock block;
   final ContentAlignment align;
   final SlideConfiguration configuration;
   final String runtimeKey;
+  final int imageHeroStart;
 
   @override
   Widget build(BuildContext context) {
@@ -317,6 +326,7 @@ class CustomBlockWidget extends StatelessWidget {
         align: align,
         configuration: configuration,
         runtimeKey: runtimeKey,
+        imageHeroStart: imageHeroStart,
         child: _CustomBlockChild(block: block),
       ),
     );
@@ -378,6 +388,9 @@ class SectionWidget extends StatelessWidget {
                       sectionIndex,
                       blockIndex,
                     );
+                    final imageHeroStart = InheritedData.of<ImageHeroPositions>(
+                      context,
+                    ).start(sectionIndex, blockIndex);
 
                     Widget blockWidget = switch (block) {
                       WidgetBlock b => CustomBlockWidget(
@@ -385,12 +398,14 @@ class SectionWidget extends StatelessWidget {
                         align: align,
                         configuration: configuration,
                         runtimeKey: runtimeKey,
+                        imageHeroStart: imageHeroStart,
                       ),
                       ContentBlock b => BlockWidget(
                         block: b,
                         align: align,
                         configuration: configuration,
                         runtimeKey: runtimeKey,
+                        imageHeroStart: imageHeroStart,
                       ),
                     };
 

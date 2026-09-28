@@ -32,10 +32,14 @@ class ImageElement {
   final Uri uri;
   final Size size;
 
+  /// Rendered endpoint when an image uses an asset cache or `@image` layout.
+  final Widget? flightImage;
+
   const ImageElement({
     required this.spec,
     required this.uri,
     required this.size,
+    this.flightImage,
   });
 }
 
