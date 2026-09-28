@@ -30,7 +30,7 @@ class LayoutShowcaseApp extends StatelessWidget {
   const LayoutShowcaseApp({
     super.key,
     this.deckLoader,
-    this.transitionDuration = const Duration(milliseconds: 650),
+    this.transitionDuration = const Duration(milliseconds: 500),
   });
 
   final DeckLoader? deckLoader;

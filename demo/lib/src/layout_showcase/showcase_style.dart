@@ -16,6 +16,8 @@ const _mutedInk = Color(0xFFC9C6CE);
 const _coral = Color(0xFFFF8A65);
 const _violet = Color(0xFFA890FF);
 const _teal = Color(0xFF59D6C8);
+const _cardRadius = 24.0;
+const _cardBorder = Color(0x3DFFFFFF);
 
 SlideStyler showcaseBaseStyle() {
   return SlideStyler(
@@ -163,9 +165,9 @@ SlideStyler showcaseBaseStyle() {
               decoration: BoxDecorationMix(
                 color: const Color(0xFF121219),
                 border: BorderMix.all(
-                  BorderSideMix(color: const Color(0x2EFFFFFF), width: 1),
+                  BorderSideMix(color: _cardBorder, width: 1),
                 ),
-                borderRadius: BorderRadiusMix.circular(30),
+                borderRadius: BorderRadiusMix.circular(_cardRadius),
               ),
             ),
           ),
@@ -269,7 +271,7 @@ SlideStyler showcasePanelStyle() {
       blockContainer: BlockStyler(
         padding: EdgeInsetsGeometryMix.symmetric(horizontal: 24, vertical: 22),
         margin: EdgeInsetsGeometryMix.symmetric(vertical: 8),
-        decoration: _panelDecoration(radius: 22),
+        decoration: _panelDecoration(radius: _cardRadius),
       ),
     ),
   );
@@ -333,9 +335,7 @@ BoxDecorationMix _panelDecoration({required double radius}) {
       end: Alignment.bottomRight,
       colors: const [Color(0x14FFFFFF), Color(0x08FFFFFF)],
     ),
-    border: BorderMix.all(
-      BorderSideMix(color: const Color(0x24FFFFFF), width: 1),
-    ),
+    border: BorderMix.all(BorderSideMix(color: _cardBorder, width: 1)),
     borderRadius: BorderRadiusMix.circular(radius),
   );
 }

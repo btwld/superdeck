@@ -32,7 +32,8 @@ class ImageElement {
   final Uri uri;
   final Size size;
 
-  /// Rendered endpoint when an image uses an asset cache or `@image` layout.
+  /// Reuses an endpoint that cannot be reconstructed from [uri] and [spec],
+  /// such as a resolved asset, decoded image, or scaled `@image` layout.
   final Widget? flightImage;
 
   const ImageElement({
@@ -88,31 +89,24 @@ class HeroElement<T> extends InheritedWidget {
   }
 }
 
-/// Generic helper to build a Hero widget with custom flight animation.
+/// Generic helper to build a Hero widget with a custom flight shuttle.
 ///
-/// This eliminates duplication across text/code/image element builders by
-/// providing a single implementation of the Hero + flightShuttleBuilder pattern.
+/// This shares the Hero placeholder behavior across text, code, and image
+/// element builders. The supplied shuttle builder owns its flight animation.
 ///
 /// Usage:
 /// ```dart
 /// buildElementHero<TextElement>(
 ///   tag: 'myHero',
 ///   child: StyledText('content'),
-///   buildFlight: (context, from, to, t) {
-///     return StyledText(
-///       lerpString(from.text, to.text, t),
-///       styleSpec: StyleSpec(spec: from.spec.lerp(to.spec, t)),
-///     );
-///   },
+///   flightShuttleBuilder: buildTextHeroFlight,
 /// )
 /// ```
 Widget buildElementHero<T>({
   required String tag,
   required Widget child,
-  Widget Function(BuildContext context, T from, T to, double t)? buildFlight,
-  HeroFlightShuttleBuilder? flightShuttleBuilder,
+  required HeroFlightShuttleBuilder flightShuttleBuilder,
 }) {
-  assert(buildFlight != null || flightShuttleBuilder != null);
   return Hero(
     tag: tag,
     // A redirected page transition may rebuild the shuttle while either
@@ -124,43 +118,7 @@ Widget buildElementHero<T>({
       size: size,
       child: Offstage(child: TickerMode(enabled: false, child: child)),
     ),
-    flightShuttleBuilder:
-        flightShuttleBuilder ??
-        (
-          BuildContext flightContext,
-          Animation<double> animation,
-          HeroFlightDirection flightDirection,
-          BuildContext fromHeroContext,
-          BuildContext toHeroContext,
-        ) {
-          final to = HeroElement.of<T>(toHeroContext);
-          final from = HeroElement.maybeOf<T>(fromHeroContext) ?? to;
-
-          // The shuttle is built inside the Navigator's Overlay, which sits
-          // outside the route's Material and therefore exposes a different
-          // DefaultTextStyle than the slide. Text properties an element spec
-          // leaves unset (letterSpacing, leadingDistribution, ...) would
-          // otherwise resolve against the Overlay's bare default and make the
-          // text change size the instant the Hero hands off to/from the real
-          // widget. Re-apply the source slide's DefaultTextStyle so the
-          // shuttle resolves identically to the widget it stands in for.
-          final slideTextStyle = DefaultTextStyle.of(fromHeroContext).style;
-
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, _) => DefaultTextStyle.merge(
-              style: slideTextStyle,
-              child: buildFlight!(
-                context,
-                from,
-                to,
-                flightDirection == HeroFlightDirection.push
-                    ? animation.value
-                    : 1 - animation.value,
-              ),
-            ),
-          );
-        },
+    flightShuttleBuilder: flightShuttleBuilder,
     child: child,
   );
 }
