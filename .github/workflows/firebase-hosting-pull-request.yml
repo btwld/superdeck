@@ -4,7 +4,9 @@
 name: Deploy to Firebase Hosting on PR
 
 on:
+  # Draft pull requests skip every job. ready_for_review runs CI when the PR is marked ready.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "demo/**"
       - "packages/**"
@@ -19,7 +21,8 @@ permissions:
 
 jobs:
   build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    # Same-repository previews only. Draft pull requests skip this job.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

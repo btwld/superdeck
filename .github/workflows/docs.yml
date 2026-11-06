@@ -7,7 +7,9 @@ on:
       - "docs/**"
       - "docs.json"
       - ".github/workflows/docs.yml"
+  # Draft pull requests skip every job. ready_for_review runs CI when the PR is marked ready.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: ["main"]
     paths:
       - "docs/**"
@@ -20,6 +22,8 @@ concurrency:
 
 jobs:
   validate:
+    # `draft` is null on push, so non-pull_request runs are unchanged.
+    if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
