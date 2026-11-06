@@ -5,6 +5,11 @@
 
 SuperDeck is a Flutter presentation framework. You write slides in Markdown, and SuperDeck renders them with Flutter.
 
+[![superdeck on pub.dev](https://img.shields.io/pub/v/superdeck?label=superdeck)](https://pub.dev/packages/superdeck)
+[![superdeck_core on pub.dev](https://img.shields.io/pub/v/superdeck_core?label=superdeck_core)](https://pub.dev/packages/superdeck_core)
+[![Test Workflow](https://github.com/btwld/superdeck/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/btwld/superdeck/actions/workflows/test.yml?query=branch%3Amain)
+[![License: BSD-3-Clause](https://img.shields.io/github/license/btwld/superdeck)](./LICENSE)
+
 ![Screenshot](https://github.com/btwld/superdeck/assets/435833/42ec88e9-d3d9-4c52-bbf9-5a2809cca257)
 
 - Live demo: https://superdeck-dev.web.app
