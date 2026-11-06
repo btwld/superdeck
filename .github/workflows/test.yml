@@ -4,7 +4,9 @@ on:
   workflow_call:
   push:
     branches: [main]
+  # Draft pull requests skip every job. ready_for_review runs CI when the PR is marked ready.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: test-${{ github.ref }}
@@ -12,6 +14,8 @@ concurrency:
 
 jobs:
   test:
+    # `draft` is null on push and on workflow_call from push, so those runs are unchanged.
+    if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     name: Test
     timeout-minutes: 12
@@ -67,6 +71,7 @@ jobs:
           fvm flutter test test/goldens/pdf_export_dialog_golden_test.dart
 
   integration-test:
+    if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     name: Integration Tests
     timeout-minutes: 25
@@ -127,6 +132,7 @@ jobs:
         timeout-minutes: 7
 
   web-smoke:
+    if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     name: Web Smoke (Playwright)
     timeout-minutes: 25
