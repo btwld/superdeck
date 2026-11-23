@@ -5,7 +5,8 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../../../superdeck.dart';
+import '../styling/components/markdown_codeblock.dart';
+import '../styling/components/slide.dart';
 import 'builders/alert_element_builder.dart';
 import 'builders/code_element_builder.dart';
 import 'builders/image_element_builder.dart';

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart' show BlockStyler, SlideStyler;
 import 'package:superdeck/src/builtins/image_widget.dart';
 import 'package:superdeck/src/builtins/widgets.dart';
 import 'package:superdeck/src/rendering/slides/slide_parts.dart';
@@ -12,6 +11,7 @@ import 'package:superdeck/src/styling/default_style.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/utils/constants.dart';
+import 'package:superdeck/superdeck.dart' show BlockStyler, SlideStyler;
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../fixtures/slide_fixtures.dart';

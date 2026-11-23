@@ -91,7 +91,7 @@ sealed class Block with _$BlockAck {
     return parse(_normalizeAuthoringInsets(map));
   }
 
-  static final fromJson = BlockSchema.fromJson;
+  static const fromJson = BlockSchema.fromJson;
 }
 
 /// A section that contains multiple child blocks arranged horizontally.
@@ -133,7 +133,7 @@ final class SectionBlock with _$SectionBlockAck {
     return block.align ?? align ?? ContentAlignment.centerLeft;
   }
 
-  static final fromJson = SectionBlockSchema.fromJson;
+  static const fromJson = SectionBlockSchema.fromJson;
 
   /// Parses a section block from a JSON map.
   static SectionBlock parse(Map<String, Object?> map) =>
@@ -176,7 +176,7 @@ final class ContentBlock extends Block with _$ContentBlockAck {
   @override
   String get type => 'block';
 
-  static final fromJson = ContentBlockSchema.fromJson;
+  static const fromJson = ContentBlockSchema.fromJson;
 
   /// Parses a content block from normalized contract data.
   static ContentBlock parse(Map<String, Object?> map) =>
@@ -289,7 +289,7 @@ final class WidgetBlock extends Block with _$WidgetBlockAck {
     return deepUnmodifiableJsonMap(filtered);
   }
 
-  static final fromJson = WidgetBlockSchema.fromJson;
+  static const fromJson = WidgetBlockSchema.fromJson;
 
   /// Parses a widget block from normalized contract data.
   static WidgetBlock parse(Map<String, Object?> map) =>

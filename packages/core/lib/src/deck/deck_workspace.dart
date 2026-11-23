@@ -70,7 +70,7 @@ final class DeckWorkspace with _$DeckWorkspaceAck {
 
   File get pubspecFile => File(p.join(projectDir, 'pubspec.yaml'));
 
-  static final fromJson = DeckWorkspaceSchema.fromJson;
+  static const fromJson = DeckWorkspaceSchema.fromJson;
 
   static DeckWorkspace parse(Map<String, Object?> map) =>
       DeckWorkspaceSchema.parse(map);

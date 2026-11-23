@@ -23,7 +23,7 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
         .color(_trigger.value ? Colors.deepPurpleAccent : Colors.grey.shade300)
         .height(30)
         .width(65)
-        .borderRadiusAll(Radius.circular(40))
+        .borderRadiusAll(const Radius.circular(40))
         .alignment(
           _trigger.value ? Alignment.centerRight : Alignment.centerLeft,
         )
@@ -41,14 +41,14 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
         )
         .foregroundDecoration(
           BoxDecorationMix().borderRadius(
-            BorderRadiusMix.all(Radius.circular(40)),
+            BorderRadiusMix.all(const Radius.circular(40)),
           ),
         )
         .borderRounded(40)
         .scale(0.85)
         .shadowOnly(
           color: Colors.black.withValues(alpha: 0.1),
-          offset: Offset(2, 4),
+          offset: const Offset(2, 4),
           blurRadius: 4,
           spreadRadius: 3,
         )

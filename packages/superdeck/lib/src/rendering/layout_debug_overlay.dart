@@ -86,13 +86,13 @@ class LayoutDebugLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xE6071018),
+    return const ColoredBox(
+      color: Color(0xE6071018),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             _LegendItem(color: debugSectionColor, label: 'SECTION'),
             SizedBox(width: 10),
             _LegendItem(color: debugBlockColor, label: 'BLOCK'),

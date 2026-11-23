@@ -72,14 +72,14 @@ SlideStyler showcaseBaseStyle() {
     strong: TextStyleMix(fontWeight: FontWeight.w800, color: _ink),
     em: TextStyleMix(fontStyle: FontStyle.italic, color: _coral),
     del: TextStyleMix(
-      color: Color(0xFF77737D),
+      color: const Color(0xFF77737D),
       decoration: TextDecoration.lineThrough,
-      decorationColor: Color(0xFFAAA6AF),
+      decorationColor: const Color(0xFFAAA6AF),
     ),
     link: TextStyleMix(
       color: _teal,
       decoration: TextDecoration.underline,
-      decorationColor: Color(0x9959D6C8),
+      decorationColor: const Color(0x9959D6C8),
     ),
     list: MarkdownListStyler(
       text: TextStyler().style(

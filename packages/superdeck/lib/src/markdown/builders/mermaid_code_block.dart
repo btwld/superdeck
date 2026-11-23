@@ -3,8 +3,8 @@ import 'package:mermaid_core/mermaid_core.dart' as mermaid;
 import 'package:mermaid_flutter/mermaid_flutter.dart';
 
 import '../../capture/slide_capture_readiness.dart';
-import '../mermaid/mermaid_source_check.dart';
 import '../../ui/widgets/error_widgets.dart';
+import '../mermaid/mermaid_source_check.dart';
 
 /// Renders a ```` ```mermaid ```` fence as a painted diagram.
 ///

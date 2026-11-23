@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('FrontmatterParser Tests', () {
-    final parser = FrontmatterParser();
+    const parser = FrontmatterParser();
 
     test('Parses frontmatter and markdown correctly', () {
       const input = '''

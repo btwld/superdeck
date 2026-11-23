@@ -22,7 +22,7 @@ void main() {
     });
 
     test('write persists bytes and resolve returns the file uri', () async {
-      final key = 'thumbnail_intro.png';
+      const key = 'thumbnail_intro.png';
       final bytes = [1, 2, 3];
 
       final writtenUri = await store.write(key, bytes);

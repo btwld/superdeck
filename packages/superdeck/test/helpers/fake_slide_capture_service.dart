@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/capture/slide_capture_service.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
 
 /// Test fake for [SlideCaptureService] that returns predefined bytes.
 ///

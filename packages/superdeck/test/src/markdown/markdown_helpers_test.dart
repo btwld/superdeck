@@ -191,8 +191,8 @@ void main() {
 
   group('lerpStringWithFade', () {
     test('REPRO: "Leo Farias" -> "Generative UI" last word flicker', () {
-      final start = 'Leo Farias';
-      final end = 'Generative UI';
+      const start = 'Leo Farias';
+      const end = 'Generative UI';
 
       // Test critical points around where space + "UI" appear
       final criticalPoints = [
@@ -264,8 +264,8 @@ void main() {
       });
 
       test('fades characters left-to-right', () {
-        final start = 'ABCD';
-        final end = 'WXYZ';
+        const start = 'ABCD';
+        const end = 'WXYZ';
 
         // Early in fade-out: more characters visible
         final result1 = lerpStringWithFade(start, end, 0.1);
@@ -299,8 +299,8 @@ void main() {
       });
 
       test('adds characters left-to-right', () {
-        final start = 'ABCD';
-        final end = 'WXYZ';
+        const start = 'ABCD';
+        const end = 'WXYZ';
 
         // Early in fade-in: fewer characters visible
         final result1 = lerpStringWithFade(start, end, 0.6);

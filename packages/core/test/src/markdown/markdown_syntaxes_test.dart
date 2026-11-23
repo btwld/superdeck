@@ -1,8 +1,7 @@
 import 'package:markdown/markdown.dart' as md;
-import 'package:test/test.dart';
-
 import 'package:superdeck_core/src/markdown/hero_tag_helpers.dart';
 import 'package:superdeck_core/src/markdown/markdown_syntaxes.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('stripTrailingHeroMarker', () {
@@ -164,7 +163,7 @@ void main() {
     });
 
     test('handles all heading levels (h1-h6)', () {
-      final markdown = '''
+      const markdown = '''
 # H1 {.hero1}
 ## H2 {.hero2}
 ### H3 {.hero3}
@@ -319,7 +318,7 @@ void main() {
 
   group('HeroFencedCodeBlockSyntax', () {
     test('parses code block with hero tag', () {
-      final markdown = '''
+      const markdown = '''
 ```dart {.hero}
 void main() {}
 ```
@@ -334,7 +333,7 @@ void main() {}
     });
 
     test('parses code block without hero tag', () {
-      final markdown = '''
+      const markdown = '''
 ```dart
 void main() {}
 ```
@@ -348,7 +347,7 @@ void main() {}
     });
 
     test('handles tilde fences', () {
-      final markdown = '''
+      const markdown = '''
 ~~~python {.hero}
 print("hello")
 ~~~
@@ -361,7 +360,7 @@ print("hello")
     });
 
     test('handles multiple classes in fence info', () {
-      final markdown = '''
+      const markdown = '''
 ```js {.hero .special}
 console.log("test");
 ```
@@ -374,7 +373,7 @@ console.log("test");
     });
 
     test('handles code block without language', () {
-      final markdown = '''
+      const markdown = '''
 ``` {.hero}
 plain text
 ```
@@ -387,7 +386,7 @@ plain text
     });
 
     test('handles indented fences', () {
-      final markdown = '''
+      const markdown = '''
    ```dart {.hero}
    code
    ```
@@ -400,7 +399,7 @@ plain text
     });
 
     test('preserves code content exactly', () {
-      final markdown = '''
+      const markdown = '''
 ```dart {.hero}
 // Special chars: <>&"'
 String test = "hello {.world}";
@@ -418,7 +417,7 @@ String test = "hello {.world}";
 
   group('Integration with ExtensionSet', () {
     test('works with gitHubFlavored extension set', () {
-      final markdown = '''
+      const markdown = '''
 # Header {.hero}
 
 Some **bold** text.
@@ -449,7 +448,7 @@ void main() {}
     });
 
     test('combines all three syntax types', () {
-      final markdown = '''
+      const markdown = '''
 # Page Title {.title-hero}
 
 ![Logo](logo.svg) {.logo-hero}

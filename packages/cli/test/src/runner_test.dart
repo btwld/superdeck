@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_builder/superdeck_builder.dart';
-import 'package:superdeck_cli/superdeck_cli.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
+import 'package:superdeck_cli/superdeck_cli.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 

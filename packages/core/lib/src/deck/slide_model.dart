@@ -30,7 +30,7 @@ final class Slide with _$SlideAck {
   }) : sections = List.unmodifiable(sections),
        comments = List.unmodifiable(comments);
 
-  static final fromJson = SlideSchema.fromJson;
+  static const fromJson = SlideSchema.fromJson;
 
   /// Validates [map] against the schema and constructs a [Slide].
   static Slide parse(Map<String, Object?> map) => SlideSchema.parse(map);
@@ -87,7 +87,7 @@ final class SlideOptions with _$SlideOptionsAck {
          ),
        );
 
-  static final fromJson = SlideOptionsSchema.fromJson;
+  static const fromJson = SlideOptionsSchema.fromJson;
 
   /// Validates [map] against the schema and constructs [SlideOptions].
   static SlideOptions parse(Map<String, Object?> map) =>

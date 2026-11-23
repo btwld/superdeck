@@ -43,7 +43,7 @@ void main() {
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
 
       // Create key down event for arrow right
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.arrowRight,
         logicalKey: LogicalKeyboardKey.arrowRight,
         timeStamp: Duration.zero,
@@ -61,7 +61,7 @@ void main() {
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
 
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.arrowDown,
         logicalKey: LogicalKeyboardKey.arrowDown,
         timeStamp: Duration.zero,
@@ -79,7 +79,7 @@ void main() {
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
 
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.arrowLeft,
         logicalKey: LogicalKeyboardKey.arrowLeft,
         timeStamp: Duration.zero,
@@ -97,7 +97,7 @@ void main() {
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
 
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.arrowUp,
         logicalKey: LogicalKeyboardKey.arrowUp,
         timeStamp: Duration.zero,
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('KeyUpEvent returns null (only KeyDownEvent processed)', () {
-      final event = KeyUpEvent(
+      const event = KeyUpEvent(
         physicalKey: PhysicalKeyboardKey.arrowRight,
         logicalKey: LogicalKeyboardKey.arrowRight,
         timeStamp: Duration.zero,
@@ -125,7 +125,7 @@ void main() {
       await tester.pump();
 
       // Do NOT press meta key
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.arrowRight,
         logicalKey: LogicalKeyboardKey.arrowRight,
         timeStamp: Duration.zero,
@@ -141,7 +141,7 @@ void main() {
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
 
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.space,
         logicalKey: LogicalKeyboardKey.space,
         timeStamp: Duration.zero,
@@ -159,7 +159,7 @@ void main() {
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
 
-      final event = KeyDownEvent(
+      const event = KeyDownEvent(
         physicalKey: PhysicalKeyboardKey.keyA,
         logicalKey: LogicalKeyboardKey.keyA,
         timeStamp: Duration.zero,

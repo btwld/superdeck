@@ -49,7 +49,7 @@ void main() {
         (tester) async {
           const markdown = '# Test Header';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
           // Verify header text is rendered
@@ -62,7 +62,7 @@ void main() {
         (tester) async {
           const markdown = 'Regular paragraph text.';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
           // Verify paragraph text is rendered
@@ -360,7 +360,7 @@ void main() {
         (tester) async {
           const markdown = '## Header with Size';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
           // Verify rendering completed without BlockConfiguration access errors
@@ -380,7 +380,7 @@ void main() {
         (tester) async {
           const markdown = '# Title {.heading}';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
           // Verify text is rendered (CSS tag stripped by getTagAndContent)
@@ -458,7 +458,7 @@ void main() {
 ```
 ''';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
           // Verify code renders through CodeElementBuilder (uses RichText)
@@ -522,7 +522,7 @@ void main() {}
         (tester) async {
           const markdown = 'Plain text content';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
           // Verify text is rendered via visitText method
@@ -542,7 +542,7 @@ void main() {}
       ) async {
         const markdown = 'Text with tag {.text-hero}';
 
-        await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+        await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
         await tester.pumpAndSettle();
 
         // Verify text is rendered (tag stripped, becomes part of paragraph)

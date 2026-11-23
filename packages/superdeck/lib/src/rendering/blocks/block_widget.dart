@@ -392,15 +392,15 @@ class SectionWidget extends StatelessWidget {
                       context,
                     ).start(sectionIndex, blockIndex);
 
-                    Widget blockWidget = switch (block) {
-                      WidgetBlock b => CustomBlockWidget(
+                    final Widget blockWidget = switch (block) {
+                      final WidgetBlock b => CustomBlockWidget(
                         block: b,
                         align: align,
                         configuration: configuration,
                         runtimeKey: runtimeKey,
                         imageHeroStart: imageHeroStart,
                       ),
-                      ContentBlock b => BlockWidget(
+                      final ContentBlock b => BlockWidget(
                         block: b,
                         align: align,
                         configuration: configuration,

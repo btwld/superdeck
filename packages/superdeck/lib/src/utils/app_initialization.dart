@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
@@ -29,10 +31,12 @@ Future<void> _initializeWindowManager() async {
     titleBarStyle: TitleBarStyle.hidden,
   );
 
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  unawaited(
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    }),
+  );
 
   await windowManager.setAspectRatio(kAspectRatio);
 }

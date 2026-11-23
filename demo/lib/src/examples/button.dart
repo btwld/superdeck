@@ -26,7 +26,7 @@ class ButtonExample extends StatelessWidget {
       .minWidth(100)
       .mainAxisAlignment(MainAxisAlignment.center)
       .labelLetterSpacing(0.3)
-      .borderRadiusAll(Radius.circular(6))
+      .borderRadiusAll(const Radius.circular(6))
       .scale(1)
       .onDisabled(
         RemixButtonStyler()

@@ -3,8 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'tokens/colors.dart';
-
 import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';
 import '../deck/default_deck_setup.dart';
@@ -14,6 +12,7 @@ import '../utils/app_initialization.dart';
 import '../utils/asset_cache_store.dart';
 import 'app_shell.dart';
 import 'app_theme.dart';
+import 'tokens/colors.dart';
 
 class SuperDeckApp extends StatelessWidget {
   const SuperDeckApp({

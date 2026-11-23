@@ -12,12 +12,12 @@ String generateValueHash(String valueToHash) {
   int hash = 0;
 
   for (int i = 0; i < valueToHash.length; i++) {
-    int charCode = valueToHash.codeUnitAt(i);
+    final int charCode = valueToHash.codeUnitAt(i);
     hash = (hash * 31 + charCode) % 2147483647;
   }
 
   String shortId = '';
-  int base = characters.length;
+  const int base = characters.length;
   int remainingHash = hash;
 
   for (int i = 0; i < 8; i++) {

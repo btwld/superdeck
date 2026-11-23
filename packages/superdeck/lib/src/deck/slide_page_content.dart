@@ -110,7 +110,7 @@ class _NoSlidesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -128,7 +128,7 @@ class _NoSlidesScreen extends StatelessWidget {
               SizedBox(height: 12),
               Text(
                 "This presentation doesn't have any slides to show yet.",
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ],

@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/builtins/widgets.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class _InMemoryCacheStore implements AssetCacheStore {

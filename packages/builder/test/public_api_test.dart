@@ -4,13 +4,13 @@ import 'package:test/test.dart';
 void main() {
   group('superdeck_builder public api', () {
     test('exports the supported build surface', () {
-      final error = DeckFormatException('invalid', '', 0);
+      const error = DeckFormatException('invalid', '', 0);
 
       expect(DeckBuilder, isNotNull);
       expect(DeckPlugin, isNotNull);
       expect(DeckBuildPlugin, isNotNull);
       expect(DeckBuildContext, isNotNull);
-      expect(BuildStarted(), isA<BuildEvent>());
+      expect(const BuildStarted(), isA<BuildEvent>());
       expect(error, isA<Exception>());
     });
   });

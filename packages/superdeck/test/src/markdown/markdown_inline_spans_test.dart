@@ -14,7 +14,7 @@ void main() {
     const linkColor = Color(0xFFFF00FF);
     const codeColor = Color(0xFF00FFFF);
 
-    final slideSpec = const SlideSpec(
+    const slideSpec = SlideSpec(
       strong: TextStyle(color: strongColor, fontWeight: FontWeight.w900),
       em: TextStyle(color: emColor, fontStyle: FontStyle.italic),
       del: TextStyle(color: delColor, decoration: TextDecoration.lineThrough),

@@ -9,7 +9,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
 @tag
 ''',
     'expectedBlocks': [
-      ParsedBlock(type: 'tag', data: {}, startIndex: 0, endIndex: 4),
+      const ParsedBlock(type: 'tag', data: {}, startIndex: 0, endIndex: 4),
     ],
   },
   {
@@ -18,7 +18,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
 @tag {key: value}
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 'value'},
         startIndex: 0,
@@ -36,7 +36,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
 Test content
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
@@ -51,7 +51,7 @@ Test content
 @tag{key: value}
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 'value'},
         startIndex: 0,
@@ -71,7 +71,7 @@ Test content
 ## Test content 2
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
@@ -89,7 +89,7 @@ Test content
 }
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
@@ -108,7 +108,7 @@ Test content
 }
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 1, 'key2': 2.0, 'key3': true},
         startIndex: 0,
@@ -124,7 +124,7 @@ Test content
 { key: value }
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'key': 'value'},
         startIndex: 0,
@@ -139,7 +139,7 @@ Test content
 @tag {label: "{value} text"}
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag',
         data: {'label': '{value} text'},
         startIndex: 0,
@@ -159,13 +159,13 @@ Test content 1
 Test content 2
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag1',
         data: {'key': 'value'},
         startIndex: 0,
         endIndex: 18,
       ),
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag2',
         data: {'key2': 'value2'},
         startIndex: 35,
@@ -181,13 +181,13 @@ Test content 2
 @tag2 {key2: value2}
 ''',
     'expectedBlocks': [
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag1',
         data: {'key': 'value'},
         startIndex: 0,
         endIndex: 18,
       ),
-      ParsedBlock(
+      const ParsedBlock(
         type: 'tag2',
         data: {'key2': 'value2'},
         startIndex: 19,

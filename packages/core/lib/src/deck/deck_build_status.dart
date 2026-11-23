@@ -12,7 +12,7 @@ final class DeckBuildError with _$DeckBuildErrorAck {
 
   const DeckBuildError({required this.message});
 
-  static final fromJson = DeckBuildErrorSchema.fromJson;
+  static const fromJson = DeckBuildErrorSchema.fromJson;
 
   static DeckBuildError? fromObject(Object? value) =>
       DeckBuildErrorSchema.safeParse(value).getOrNull();
@@ -33,7 +33,7 @@ final class DeckBuildStatus with _$DeckBuildStatusAck {
     this.error,
   }) : timestamp = timestamp.toUtc();
 
-  static final fromJson = DeckBuildStatusSchema.fromJson;
+  static const fromJson = DeckBuildStatusSchema.fromJson;
 
   static DeckBuildStatus? fromObject(Object? value) =>
       DeckBuildStatusSchema.safeParse(value).getOrNull();

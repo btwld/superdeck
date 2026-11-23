@@ -11,9 +11,9 @@ export 'src/deck/block_insets.dart';
 export 'src/deck/block_model.dart';
 export 'src/deck/deck_build_status.dart';
 export 'src/deck/deck_build_store.dart';
-export 'src/deck/deck_workspace.dart';
 export 'src/deck/deck_format_exception.dart';
 export 'src/deck/deck_loader.dart';
+export 'src/deck/deck_workspace.dart';
 export 'src/deck/slide_contract.dart';
 export 'src/deck/slide_model.dart';
 // Markdown

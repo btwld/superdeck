@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/slide_configuration_builder.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/utils/constants.dart' show kSlideBackgroundColor;
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../helpers/layout_assertions.dart';

@@ -69,10 +69,10 @@ void main() {
       final controller = await tester.pumpTestAppWithSlides(makeSlides(6));
 
       // Fire multiple goToSlide calls without awaiting each
-      controller.presentation.goToSlide(5);
-      controller.presentation.goToSlide(2);
-      controller.presentation.goToSlide(4);
-      controller.presentation.goToSlide(1);
+      unawaited(controller.presentation.goToSlide(5));
+      unawaited(controller.presentation.goToSlide(2));
+      unawaited(controller.presentation.goToSlide(4));
+      unawaited(controller.presentation.goToSlide(1));
 
       // Let the transition duration and router settle
       await tester.pumpFor(const Duration(seconds: 2));

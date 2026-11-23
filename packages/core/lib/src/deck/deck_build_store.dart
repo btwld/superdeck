@@ -1,8 +1,8 @@
+import 'package:logging/logging.dart';
 import 'package:markdown/markdown.dart' as md;
 
 import '../markdown/markdown_json.dart';
 import '../utils/extensions.dart';
-import 'package:logging/logging.dart';
 import '../utils/pretty_json.dart';
 import 'deck_build_status.dart';
 import 'deck_workspace.dart';

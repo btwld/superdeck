@@ -5,7 +5,7 @@ void main() {
   group('prettyJson', () {
     test('formats a simple map correctly', () {
       final input = {'name': 'John', 'age': 30};
-      final expected = '''{
+      const expected = '''{
   "name": "John",
   "age": 30
 }''';
@@ -22,7 +22,7 @@ void main() {
         },
       };
 
-      final expected = '''{
+      const expected = '''{
   "person": {
     "name": "John",
     "age": 30,
@@ -38,7 +38,7 @@ void main() {
 
     test('formats a list correctly', () {
       final input = [1, 2, 3, 4, 5];
-      final expected = '''[
+      const expected = '''[
   1,
   2,
   3,
@@ -58,7 +58,7 @@ void main() {
         'count': 2,
       };
 
-      final expected = '''{
+      const expected = '''{
   "items": [
     {
       "id": 1,

@@ -11,8 +11,8 @@ void main() {
     testWidgets('renders without errors when empty', (tester) async {
       await tester.pumpWidget(
         MixScope(
-          child: MaterialApp(
-            home: Scaffold(body: CommentsPanel(comments: const [])),
+          child: const MaterialApp(
+            home: Scaffold(body: CommentsPanel(comments: [])),
           ),
         ),
       );
@@ -24,10 +24,8 @@ void main() {
     testWidgets('displays single comment', (tester) async {
       await tester.pumpWidget(
         MixScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: CommentsPanel(comments: const ['Test comment']),
-            ),
+          child: const MaterialApp(
+            home: Scaffold(body: CommentsPanel(comments: ['Test comment'])),
           ),
         ),
       );
@@ -39,10 +37,10 @@ void main() {
     testWidgets('displays multiple comments', (tester) async {
       await tester.pumpWidget(
         MixScope(
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: CommentsPanel(
-                comments: const ['Comment 1', 'Comment 2', 'Comment 3'],
+                comments: ['Comment 1', 'Comment 2', 'Comment 3'],
               ),
             ),
           ),
@@ -72,10 +70,10 @@ void main() {
     testWidgets('handles special characters', (tester) async {
       await tester.pumpWidget(
         MixScope(
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: CommentsPanel(
-                comments: const ['Hello! 😀 こんにちは', 'Test & <test>'],
+                comments: ['Hello! 😀 こんにちは', 'Test & <test>'],
               ),
             ),
           ),

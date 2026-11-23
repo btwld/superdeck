@@ -38,8 +38,8 @@ void main() {
           reason: entry.value,
         );
 
-        final scene = Mermaid(
-          measurer: const ApproximateTextMeasurer(),
+        final scene = const Mermaid(
+          measurer: ApproximateTextMeasurer(),
         ).render(entry.value);
 
         expect(scene.nodes, isNotEmpty, reason: entry.value);

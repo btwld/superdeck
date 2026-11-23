@@ -48,7 +48,7 @@ class UriValidator {
 
     // Reject protocol-relative URIs (e.g., //example.com)
     if (!uri.hasScheme && trimmed.startsWith('//')) {
-      throw FormatException('Protocol-relative URIs are not supported');
+      throw const FormatException('Protocol-relative URIs are not supported');
     }
 
     // Validate scheme is in allowlist
@@ -81,7 +81,7 @@ class UriValidator {
         final lower = s.toLowerCase();
         return s == '..' || lower == '%2e%2e';
       })) {
-        throw FormatException('Path traversal detected');
+        throw const FormatException('Path traversal detected');
       }
     }
 

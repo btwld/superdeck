@@ -36,7 +36,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
   ) {
     var language = 'dart';
     if (element.attributes['class'] != null) {
-      String lg = element.attributes['class'] as String;
+      final String lg = element.attributes['class'] as String;
       if (lg.startsWith('language-')) {
         language = lg.substring(9);
       }
@@ -64,7 +64,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
         );
 
         // Build the code widget
-        Widget codeWidget = Row(
+        final Widget codeWidget = Row(
           children: [
             Expanded(
               child: Box(

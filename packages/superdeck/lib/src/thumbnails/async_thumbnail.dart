@@ -93,6 +93,8 @@ class AsyncThumbnail {
     _error.dispose();
   }
 
+  // Public API; a named parameter would break callers.
+  // ignore: bitwild_lints/prefer_named_boolean_parameters
   Future<void> load(BuildContext context, [bool force = false]) {
     if (_disposed) return Future.value();
     if (_isGenerating) {

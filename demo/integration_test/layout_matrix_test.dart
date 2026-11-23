@@ -760,13 +760,13 @@ List<Block> _applyBlockFlex(List<Block> blocks, List<int>? flex) {
   return [
     for (var index = 0; index < blocks.length; index++)
       switch (blocks[index]) {
-        ContentBlock block => ContentBlock(
+        final ContentBlock block => ContentBlock(
           block.content,
           align: block.align,
           flex: flex[index],
           scrollable: block.scrollable,
         ),
-        WidgetBlock block => WidgetBlock(
+        final WidgetBlock block => WidgetBlock(
           name: block.name,
           args: block.args,
           align: block.align,
