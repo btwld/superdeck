@@ -37,7 +37,9 @@ melos:
   scripts:
     # ANALYSIS
     analyze:
-      run: fvm dart run melos exec -c 10 -- fvm dart analyze --fatal-infos
+      # One package at a time: parallel analysis servers race to build the
+      # shared bitwild_lints plugin snapshot.
+      run: fvm dart run melos exec -c 1 -- fvm dart analyze --fatal-infos
       description: >-
         Run static analysis checks, including the bitwild_lints analyzer
         plugin.
