@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:mermaid_flutter/mermaid_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mermaid_flutter/mermaid_flutter.dart';
+import 'package:superdeck/src/markdown/builders/mermaid_code_block.dart';
 import 'package:superdeck/superdeck.dart'
     show SlideCaptureReadiness, SlideParts;
-import 'package:superdeck/src/markdown/builders/mermaid_code_block.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../helpers/slide_test_harness.dart';

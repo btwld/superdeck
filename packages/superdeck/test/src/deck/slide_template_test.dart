@@ -1,3 +1,6 @@
+// These tests compare distinct instances, which const would canonicalize.
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 

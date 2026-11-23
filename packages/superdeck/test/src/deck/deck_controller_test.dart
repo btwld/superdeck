@@ -286,7 +286,7 @@ void main() {
         // Wait for initial auto-load to complete
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        mockDeckLoader.emitError(DeckBuildError(message: 'build failed'));
+        mockDeckLoader.emitError(const DeckBuildError(message: 'build failed'));
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 

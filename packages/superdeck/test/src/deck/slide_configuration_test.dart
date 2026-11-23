@@ -8,7 +8,7 @@ Widget _sameWidget(Map<String, Object?> args) => const SizedBox.shrink();
 void main() {
   group('SlideConfiguration', () {
     test('copyWith updates values and clears nullable fields on null', () {
-      final parts = SlideParts();
+      const parts = SlideParts();
       final assetCacheStore = _FakeAssetCacheStore();
       final original = SlideConfiguration(
         slideIndex: 0,

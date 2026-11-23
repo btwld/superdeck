@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart' show BlockVariant;
 import 'package:superdeck/src/styling/block_variant.dart'
     show BlockVariantScope;
+import 'package:superdeck/superdeck.dart' show BlockVariant;
 
 void main() {
   group('BlockVariant', () {

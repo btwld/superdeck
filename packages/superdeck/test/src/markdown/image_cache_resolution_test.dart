@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/ui/widgets/resolved_asset_image.dart';
@@ -116,10 +116,10 @@ class _MarkdownHarness extends StatelessWidget {
       thumbnailKey: 'thumb.png',
       assetCacheStore: assetCacheStore,
     );
-    final blockData = BlockConfiguration(
+    const blockData = BlockConfiguration(
       align: ContentAlignment.centerLeft,
       spec: slideSpec,
-      size: const Size(800, 600),
+      size: Size(800, 600),
       runtimeKey: 'slide:s0:b0',
     );
 

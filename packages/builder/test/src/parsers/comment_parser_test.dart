@@ -10,13 +10,13 @@ void main() {
 
   group('CommentParser', () {
     test('parses single line comment correctly', () {
-      final input = '<!-- This is a comment -->';
+      const input = '<!-- This is a comment -->';
       final result = parser.parse(input);
       expect(result, ['This is a comment']);
     });
 
     test('parses multiple single line comments correctly', () {
-      final input = '''
+      const input = '''
 <!-- First comment -->
 <!-- Second comment -->
 <!-- Third comment -->''';
@@ -25,7 +25,7 @@ void main() {
     });
 
     test('handles comments with special characters', () {
-      final input = '''
+      const input = '''
 <!-- Comment with numbers 123 -->
 <!-- Comment with symbols !@#\$% -->
 <!-- Comment with Unicode 你好 -->''';
@@ -38,7 +38,7 @@ void main() {
     });
 
     test('ignores invalid comments', () {
-      final input = '''
+      const input = '''
 <!-- Valid comment -->
 <!- Invalid comment ->
 <-- Also invalid -->
@@ -50,7 +50,7 @@ Text without comments
     });
 
     test('handles empty comments', () {
-      final input = '''
+      const input = '''
 <!---->
 <!-- -->
 <!--     -->''';
@@ -59,7 +59,7 @@ Text without comments
     });
 
     test('handles comments with leading and trailing spaces', () {
-      final input = '''
+      const input = '''
 <!--    Spaces before   -->
 <!--   Spaces around   -->
 <!--Spaces after    -->''';
@@ -68,7 +68,7 @@ Text without comments
     });
 
     test('ignores comments without proper spacing', () {
-      final input = '''
+      const input = '''
 <!--No space after arrow-->
 <!--No space before arrow -->
 <!-- Valid comment -->''';
@@ -81,7 +81,7 @@ Text without comments
     });
 
     test('handles mixed content correctly', () {
-      final input = '''
+      const input = '''
 Regular text
 <!-- Comment 1 -->
 More text
@@ -92,7 +92,7 @@ Final text''';
     });
 
     test('handles multiline comments correctly', () {
-      final input = '''
+      const input = '''
 <!--
   Multiline comment
   with multiple lines

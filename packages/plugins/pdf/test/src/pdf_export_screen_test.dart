@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck_pdf/superdeck_pdf.dart';
 import 'package:superdeck_pdf/src/pdf_export_screen.dart';
+import 'package:superdeck_pdf/superdeck_pdf.dart';
 
 import '../helpers/test_helpers.dart';
 

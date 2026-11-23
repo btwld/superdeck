@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:superdeck/src/rendering/blocks/block_provider.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/markdown/builders/alert_element_builder.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
+import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -168,7 +168,7 @@ void main() {
 - Item 2
 ''';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();
 
       expect(find.text('Item 1'), findsOneWidget);
@@ -183,7 +183,7 @@ This has **bold** text and a list:
 - Item 2
 ''';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('bold'), findsOneWidget);
@@ -200,7 +200,7 @@ This has **bold** text and a list:
 > - Item 2
 ''';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('bold'), findsOneWidget);
@@ -215,7 +215,7 @@ void main() {}
 ```
 ''';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();
 
       final heroes = tester.widgetList<Hero>(find.byType(Hero));
@@ -232,7 +232,7 @@ class _MarkdownHarness extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final extensionSet = md.ExtensionSet.gitHubWeb;
-    final slideSpec = const SlideSpec();
+    const slideSpec = SlideSpec();
     final registry = SpecMarkdownBuilders(slideSpec);
     final styleSheet = slideSpec.toStyle();
     final slideConfiguration = SlideConfiguration(
@@ -242,10 +242,10 @@ class _MarkdownHarness extends StatelessWidget {
       thumbnailKey: 'thumb.png',
     );
 
-    final blockData = BlockConfiguration(
+    const blockData = BlockConfiguration(
       align: ContentAlignment.centerLeft,
       spec: slideSpec,
-      size: const Size(800, 600),
+      size: Size(800, 600),
       runtimeKey: 'slide:s0:b0',
     );
 

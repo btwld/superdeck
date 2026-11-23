@@ -229,7 +229,10 @@ class _ParagraphLayout {
     this.frameSize,
     this.offset,
     this.container,
+    // Private value class; its one caller passes every field in order.
+    // ignore: bitwild_lints/prefer_named_boolean_parameters
     this.framed,
+    // ignore: bitwild_lints/prefer_named_boolean_parameters
     this.singleLine,
     this.glyphBounds,
   );

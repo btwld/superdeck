@@ -3,12 +3,12 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/markdown/builders/image_element_builder.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -33,7 +33,7 @@ void main() {
       (tester) async {
         const markdown = '![test](assets/test.png)';
 
-        await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+        await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
         await tester.pumpAndSettle();
 
         // ASSERTION: The image should render through ImageElementBuilder
@@ -64,7 +64,7 @@ void main() {
     ) async {
       const markdown = '![diagram](assets/diagram.png)';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();
 
       // ASSERTION: The ConstrainedBox should have tight constraints
@@ -100,7 +100,7 @@ void main() {
     ) async {
       const markdown = '![diagram](assets/diagram.png)';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpWidget(const _MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();
 
       final image = tester.widget<CachedImage>(find.byType(CachedImage));
@@ -114,9 +114,9 @@ void main() {
       const markdown = '![diagram](assets/diagram.png)';
 
       await tester.pumpWidget(
-        _MarkdownHarness(
+        const _MarkdownHarness(
           markdown: markdown,
-          slideSpec: const SlideSpec(
+          slideSpec: SlideSpec(
             image: StyleSpec(spec: ImageSpec(fit: BoxFit.cover)),
           ),
         ),

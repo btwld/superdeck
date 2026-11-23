@@ -58,7 +58,7 @@ class MarkdownParser {
     content = content.trim();
     if (content.isEmpty) return [];
 
-    final lines = LineSplitter().convert(content);
+    final lines = const LineSplitter().convert(content);
     final separators = _findSeparatorLines(lines);
 
     final slides = <String>[];
@@ -156,7 +156,7 @@ class MarkdownParser {
     final slides = <RawSlideMarkdown>[];
     final usedKeys = <String>{};
 
-    final frontMatterExtractor = FrontmatterParser();
+    const frontMatterExtractor = FrontmatterParser();
 
     for (final rawSlide in rawSlides) {
       final frontmatter = frontMatterExtractor.parse(rawSlide);

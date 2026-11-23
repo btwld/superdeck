@@ -65,7 +65,7 @@ final class BlockInsets with _$BlockInsetsAck {
         left: horizontal,
       );
 
-  static final fromJson = BlockInsetsSchema.fromJson;
+  static const fromJson = BlockInsetsSchema.fromJson;
 
   /// Parses one supported authoring form and normalizes it to physical edges.
   ///

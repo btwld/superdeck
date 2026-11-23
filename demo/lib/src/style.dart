@@ -99,7 +99,7 @@ SlideStyler borderedStyle() {
                   style: BorderStyle.solid,
                 ),
               ),
-              borderRadius: BorderRadiusMix.all(Radius.circular(16)),
+              borderRadius: BorderRadiusMix.all(const Radius.circular(16)),
             ),
           ),
         ),

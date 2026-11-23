@@ -3,7 +3,7 @@ import 'package:superdeck_builder/src/parsers/raw_slide_schema.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final markdownParser = MarkdownParser();
+  const markdownParser = MarkdownParser();
 
   group('RawSlideMarkdown.parse', () {
     test('creates RawSlideMarkdown for valid map', () {
@@ -197,7 +197,7 @@ title: Slide 1
     });
 
     test('applies deterministic key suffixes for hash collisions', () {
-      final parser = MarkdownParser();
+      const parser = MarkdownParser();
       const markdown = '''
 ---
 title: Same

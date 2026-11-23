@@ -111,7 +111,7 @@ void main() {
 
     group('GitHub-flavored markdown features', () {
       test('converts tables', () {
-        final markdown = '''
+        const markdown = '''
 | Header 1 | Header 2 |
 |----------|----------|
 | Cell 1   | Cell 2   |
@@ -130,7 +130,7 @@ void main() {
       });
 
       test('validates complete table structure hierarchy', () {
-        final markdown = '''
+        const markdown = '''
 | Header 1 | Header 2 |
 |----------|----------|
 | Cell 1   | Cell 2   |
@@ -173,7 +173,7 @@ void main() {
       });
 
       test('validates table cell alignment attributes', () {
-        final markdown = '''
+        const markdown = '''
 | Left | Center | Right |
 |:-----|:------:|------:|
 | L1   | C1     | R1    |
@@ -209,7 +209,7 @@ void main() {
       });
 
       test('validates table with empty cells', () {
-        final markdown = '''
+        const markdown = '''
 | H1 | H2 |
 |----|---|
 |    | X |
@@ -236,7 +236,7 @@ void main() {
       });
 
       test('converts task lists', () {
-        final markdown = '''
+        const markdown = '''
 - [ ] Unchecked task
 - [x] Checked task
 ''';
@@ -249,7 +249,7 @@ void main() {
       });
 
       test('validates task list basic structure', () {
-        final markdown = '''
+        const markdown = '''
 - [ ] Unchecked task
 - [x] Checked task
 ''';
@@ -288,7 +288,7 @@ void main() {
       });
 
       test('validates strikethrough (del) element structure', () {
-        final markdown = '~~deleted text~~';
+        const markdown = '~~deleted text~~';
         final map = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
@@ -306,7 +306,7 @@ void main() {
       });
 
       test('validates horizontal rule (hr) element', () {
-        final markdown = '---';
+        const markdown = '---';
         final map = _converter.toMap(markdown);
 
         final hr = (map['children'] as List)[0] as Map;
@@ -332,7 +332,7 @@ void main() {
       });
 
       test('converts alert blocks', () {
-        final markdown = '''
+        const markdown = '''
 > [!NOTE]
 > This is a note
 ''';
@@ -345,7 +345,7 @@ void main() {
       });
 
       test('validates NOTE alert structure', () {
-        final markdown = '''
+        const markdown = '''
 > [!NOTE]
 > This is a note alert
 ''';
@@ -364,7 +364,7 @@ void main() {
       });
 
       test('validates TIP alert structure', () {
-        final markdown = '''
+        const markdown = '''
 > [!TIP]
 > This is a tip alert
 ''';
@@ -383,7 +383,7 @@ void main() {
       });
 
       test('validates IMPORTANT alert structure', () {
-        final markdown = '''
+        const markdown = '''
 > [!IMPORTANT]
 > This is important
 ''';
@@ -402,7 +402,7 @@ void main() {
       });
 
       test('validates WARNING alert structure', () {
-        final markdown = '''
+        const markdown = '''
 > [!WARNING]
 > This is a warning
 ''';
@@ -421,7 +421,7 @@ void main() {
       });
 
       test('validates CAUTION alert structure', () {
-        final markdown = '''
+        const markdown = '''
 > [!CAUTION]
 > This is a caution alert
 ''';
@@ -440,7 +440,7 @@ void main() {
       });
 
       test('converts fenced code blocks', () {
-        final markdown = '''
+        const markdown = '''
 ```dart
 void main() {
   print('Hello');
@@ -461,7 +461,7 @@ void main() {
       });
 
       test('validates fenced code block with language class', () {
-        final markdown = '''
+        const markdown = '''
 ```dart
 void main() {}
 ```
@@ -506,7 +506,7 @@ void main() {}
       });
 
       test('validates code block without language specification', () {
-        final markdown = '''
+        const markdown = '''
 ```
 plain code
 ```
@@ -530,7 +530,7 @@ plain code
       });
 
       test('validates inline code elements', () {
-        final markdown = 'Text with `inline code` here';
+        const markdown = 'Text with `inline code` here';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
@@ -550,7 +550,7 @@ plain code
       });
 
       test('validates footnote reference structure', () {
-        final markdown = '''
+        const markdown = '''
 Text with footnote[^1].
 
 [^1]: Footnote content here
@@ -580,7 +580,7 @@ Text with footnote[^1].
       });
 
       test('validates footnote section structure', () {
-        final markdown = '''
+        const markdown = '''
 See footnote[^1] and another[^2].
 
 [^1]: First note
@@ -633,7 +633,7 @@ See footnote[^1] and another[^2].
     });
 
     test('supports includeMetadata parameter', () {
-      final markdown = '''
+      const markdown = '''
 # Test
 
 [link]: https://example.com
@@ -654,7 +654,7 @@ See footnote[^1] and another[^2].
     });
 
     test('includes linkReferences when available', () {
-      final markdown = '''
+      const markdown = '''
 See [example].
 
 [example]: https://example.com "Example Site"
@@ -716,7 +716,7 @@ See [example].
       });
 
       test('validates image attributes from markdown', () {
-        final markdown =
+        const markdown =
             '![Alt text](https://example.com/image.png "Image Title")';
         final map = _converter.toMap(markdown);
 
@@ -733,7 +733,7 @@ See [example].
       });
 
       test('validates image with special characters in alt text', () {
-        final markdown =
+        const markdown =
             '![Image with "quotes" & symbols](https://example.com/img.png)';
         final map = _converter.toMap(markdown);
 
@@ -749,7 +749,7 @@ See [example].
       });
 
       test('validates image without title', () {
-        final markdown = '![Just alt](https://example.com/image.png)';
+        const markdown = '![Just alt](https://example.com/image.png)';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
@@ -765,7 +765,7 @@ See [example].
       });
 
       test('validates link attributes from markdown', () {
-        final markdown = '[Link text](https://example.com "Link Title")';
+        const markdown = '[Link text](https://example.com "Link Title")';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
@@ -782,7 +782,7 @@ See [example].
       });
 
       test('validates link with URL encoding', () {
-        final markdown = '[Search](https://example.com?q=test&lang=en)';
+        const markdown = '[Search](https://example.com?q=test&lang=en)';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
@@ -796,7 +796,7 @@ See [example].
       });
 
       test('validates link without title', () {
-        final markdown = '[No title](https://example.com)';
+        const markdown = '[No title](https://example.com)';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
@@ -808,7 +808,7 @@ See [example].
       });
 
       test('validates reference-style link attributes', () {
-        final markdown = '''
+        const markdown = '''
 [Link text][ref]
 
 [ref]: https://example.com "Reference Title"
@@ -840,7 +840,7 @@ See [example].
       });
 
       test('validates generatedId from heading markdown with custom ID', () {
-        final markdown = '# Heading {#custom-id}';
+        const markdown = '# Heading {#custom-id}';
         final map = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
@@ -853,7 +853,7 @@ See [example].
       });
 
       test('validates generatedId auto-generation from heading text', () {
-        final markdown = '## My Heading Title';
+        const markdown = '## My Heading Title';
         final map = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
@@ -867,7 +867,7 @@ See [example].
       });
 
       test('validates generatedId for multiple heading levels', () {
-        final markdown = '''
+        const markdown = '''
 # Level 1
 ## Level 2
 ### Level 3
@@ -891,7 +891,7 @@ See [example].
       });
 
       test('validates generatedId handles special characters', () {
-        final markdown = '# Hello, World! & More';
+        const markdown = '# Hello, World! & More';
         final map = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
@@ -921,7 +921,7 @@ See [example].
       });
 
       test('validates footnoteLabel from markdown footnotes', () {
-        final markdown = '''
+        const markdown = '''
 Text with footnote[^1].
 
 [^1]: Footnote content
@@ -946,7 +946,7 @@ Text with footnote[^1].
       });
 
       test('validates footnoteLabel for multiple footnotes', () {
-        final markdown = '''
+        const markdown = '''
 First[^1] and second[^2] and third[^note].
 
 [^1]: First note
@@ -1095,7 +1095,7 @@ First[^1] and second[^2] and third[^note].
 
   group('edge cases', () {
     test('handles CRLF line endings', () {
-      final markdown = '# Heading\r\n\r\nParagraph\r\n';
+      const markdown = '# Heading\r\n\r\nParagraph\r\n';
       final parsed = _converter.toMap(markdown);
 
       expect(parsed['type'], equals('document'));
@@ -1103,7 +1103,7 @@ First[^1] and second[^2] and third[^note].
     });
 
     test('handles mixed line endings', () {
-      final markdown = '# Heading\n\nParagraph\r\n\nAnother\r\n';
+      const markdown = '# Heading\n\nParagraph\r\n\nAnother\r\n';
       final parsed = _converter.toMap(markdown);
 
       expect(parsed['type'], equals('document'));
@@ -1119,21 +1119,21 @@ First[^1] and second[^2] and third[^note].
     });
 
     test('handles special markdown characters in text', () {
-      final markdown = r'Text with \* escaped \_ characters';
+      const markdown = r'Text with \* escaped \_ characters';
       final parsed = _converter.toMap(markdown);
 
       expect(parsed['children'], isNotEmpty);
     });
 
     test('handles inline code with backticks', () {
-      final markdown = 'Text with `inline code` here';
+      const markdown = 'Text with `inline code` here';
       final parsed = _converter.toMap(markdown);
 
       expect(parsed['children'], isNotEmpty);
     });
 
     test('handles links with special characters', () {
-      final markdown = '[Link](https://example.com?foo=bar&baz=qux)';
+      const markdown = '[Link](https://example.com?foo=bar&baz=qux)';
       final parsed = _converter.toMap(markdown);
 
       expect(parsed['children'], isNotEmpty);
@@ -1142,7 +1142,7 @@ First[^1] and second[^2] and third[^note].
 
   group('document structure', () {
     test('preserves multiple paragraphs', () {
-      final markdown = 'Para 1\n\nPara 2\n\nPara 3';
+      const markdown = 'Para 1\n\nPara 2\n\nPara 3';
       final map = _converter.toMap(markdown);
       final children = map['children'] as List;
 
@@ -1150,7 +1150,7 @@ First[^1] and second[^2] and third[^note].
     });
 
     test('preserves list structure', () {
-      final markdown = '''
+      const markdown = '''
 - Item 1
 - Item 2
 - Item 3
@@ -1164,7 +1164,7 @@ First[^1] and second[^2] and third[^note].
     });
 
     test('preserves heading hierarchy', () {
-      final markdown = '''
+      const markdown = '''
 # H1
 ## H2
 ### H3
@@ -1179,7 +1179,7 @@ First[^1] and second[^2] and third[^note].
     });
 
     test('preserves blockquotes', () {
-      final markdown = '''
+      const markdown = '''
 > Quote line 1
 > Quote line 2
 ''';
@@ -1194,7 +1194,7 @@ First[^1] and second[^2] and third[^note].
 
   group('integration tests', () {
     test('converts complex document with all features', () {
-      final markdown = '''
+      const markdown = '''
 # Main Heading {#custom-id}
 
 This is a **bold** paragraph with *italic* and `code`.
@@ -1249,7 +1249,7 @@ void main() {
     });
 
     test('footnoteReferences has correct structure', () {
-      final markdown = '''
+      const markdown = '''
 Text with footnote[^1].
 
 [^1]: Footnote content

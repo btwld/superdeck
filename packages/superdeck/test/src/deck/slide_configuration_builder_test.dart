@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/slide_configuration_builder.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
-  final builder = SlideConfigurationBuilder();
+  const builder = SlideConfigurationBuilder();
 
   group('SlideConfigurationBuilder', () {
     test('returns empty list for empty slides', () {
@@ -41,7 +41,7 @@ void main() {
 
     test('slide with template uses template parts and style', () {
       final templateBase = SlideStyler();
-      final templateParts = SlideParts();
+      const templateParts = SlideParts();
       final template = SlideTemplate(
         baseStyle: templateBase,
         parts: templateParts,
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('unknown template throws ArgumentError', () {
-      final options = DeckOptions(templates: {'real': SlideTemplate()});
+      final options = DeckOptions(templates: {'real': const SlideTemplate()});
       final slides = [
         Slide(
           key: 'bad',

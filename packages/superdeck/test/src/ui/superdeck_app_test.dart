@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/default_deck_setup.dart';
 import 'package:superdeck/src/deck/slide_page_content.dart';
 import 'package:superdeck/src/ui/app_shell.dart';
 import 'package:superdeck/src/ui/panels/bottom_bar.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../helpers/mock_deck_loader.dart';

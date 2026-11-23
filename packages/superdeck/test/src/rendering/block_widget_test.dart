@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart'
-    show BlockStyler, BlockVariant, SlideParts, SlideStyler;
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/ui/widgets/overflow_clip.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/superdeck.dart'
+    show BlockStyler, BlockVariant, SlideParts, SlideStyler;
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../fixtures/slide_fixtures.dart';

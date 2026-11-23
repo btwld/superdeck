@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 
-import 'setup/setup_support.dart';
 import 'base_command.dart';
+import 'setup/setup_support.dart';
 
 class SetupCommand extends SuperDeckCommand {
   final String? _projectDir;

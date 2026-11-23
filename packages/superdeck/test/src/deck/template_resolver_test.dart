@@ -207,7 +207,7 @@ void main() {
       });
 
       test('template with no baseStyle — uses defaultSlideStyle only', () {
-        final template = SlideTemplate();
+        const template = SlideTemplate();
         final options = DeckOptions(templates: {'blank': template});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(template: 'blank');
@@ -272,7 +272,9 @@ void main() {
       );
 
       test('unknown template name — throws ArgumentError', () {
-        final options = DeckOptions(templates: {'existing': SlideTemplate()});
+        final options = DeckOptions(
+          templates: {'existing': const SlideTemplate()},
+        );
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(template: 'doesNotExist');
 
@@ -285,7 +287,9 @@ void main() {
       test(
         'unknown template name — exception message references the unknown template name',
         () {
-          final options = DeckOptions(templates: {'real': SlideTemplate()});
+          final options = DeckOptions(
+            templates: {'real': const SlideTemplate()},
+          );
           final resolver = TemplateResolver(options);
           final slideOptions = SlideOptions(template: 'phantom');
 
@@ -368,7 +372,7 @@ void main() {
       });
 
       test('slide with no template field uses defaultTemplate when set', () {
-        final defaultTemplate = SlideTemplate();
+        const defaultTemplate = SlideTemplate();
         final options = DeckOptions(defaultTemplate: defaultTemplate);
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(title: 'No template');
@@ -438,7 +442,7 @@ void main() {
         expect(
           () => TemplateResolver(
             DeckOptions(
-              templates: {TemplateResolver.noneTemplate: SlideTemplate()},
+              templates: {TemplateResolver.noneTemplate: const SlideTemplate()},
             ),
           ),
           throwsA(isA<ArgumentError>()),
@@ -547,7 +551,7 @@ void main() {
       });
 
       test('returns template.parts when template is used', () {
-        final template = SlideTemplate();
+        const template = SlideTemplate();
         final options = DeckOptions(templates: {'t': template});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(template: 't');
@@ -558,7 +562,7 @@ void main() {
       });
 
       test('template.parts differs from options.parts', () {
-        final template = SlideTemplate();
+        const template = SlideTemplate();
         final options = DeckOptions(templates: {'t': template});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(template: 't');
@@ -616,8 +620,8 @@ void main() {
         'suppresses template header and footer while preserving background',
         () {
           const background = ColoredBox(color: Color(0xFF654321));
-          final template = SlideTemplate(
-            parts: const SlideParts(background: background),
+          const template = SlideTemplate(
+            parts: SlideParts(background: background),
           );
           final options = DeckOptions(templates: {'cover': template});
           final resolver = TemplateResolver(options);
@@ -636,8 +640,8 @@ void main() {
         () {
           const background = ColoredBox(color: Color(0xFF112233));
           final options = DeckOptions(
-            defaultTemplate: SlideTemplate(
-              parts: const SlideParts(background: background),
+            defaultTemplate: const SlideTemplate(
+              parts: SlideParts(background: background),
             ),
           );
           final resolver = TemplateResolver(options);
@@ -654,7 +658,7 @@ void main() {
         () {
           const background = ColoredBox(color: Color(0xFFABCDEF));
           final options = DeckOptions(
-            defaultTemplate: SlideTemplate(),
+            defaultTemplate: const SlideTemplate(),
             parts: const SlideParts(background: background),
           );
           final resolver = TemplateResolver(options);

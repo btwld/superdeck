@@ -1,0 +1,74 @@
+# Shared analyzer configuration for every package in the SuperDeck workspace.
+# Each package's analysis_options.yaml includes this file. The presets and the
+# bitwild_lints plugin come from https://github.com/btwld/lints.
+#
+# plugin.yaml turns on the plugin's recommended rules. plugin_all.yaml would
+# also turn on the ordering and formatting conventions, which report about
+# 1,700 issues on the current code.
+include:
+  - package:bitwild_analysis/dart.yaml
+  - package:bitwild_analysis/plugin.yaml
+
+analyzer:
+  # The strict modes were off before the shared presets. Turning them on
+  # reports about 40 issues; do that in a separate change.
+  language:
+    strict-casts: false
+    strict-inference: false
+    strict-raw-types: false
+  errors:
+    invalid_annotation_target: ignore
+    body_might_complete_normally_nullable: ignore
+  exclude:
+    - '**/generated_plugin_registrant.dart'
+    - '**/*.g.dart'
+    - '**/*.ack.dart'
+    # Vendored third-party code keeps its upstream style.
+    - '**/vendor/**'
+
+linter:
+  rules:
+    public_member_api_docs: false
+    always_use_package_imports: false
+    prefer_relative_imports: true
+    prefer_initializing_formals: false
+    library_private_types_in_public_api: false
+    # Conflicts with unnecessary_parenthesis; bitwild_analysis 0.4.0 drops it.
+    no_adjacent_strings_in_list: false
+    # Reports 65 dynamic calls, mostly on decoded JSON and YAML. Fix them in a
+    # separate change.
+    avoid_dynamic_calls: false
+
+# Member order, as in AGENTS.md, for sort_class_members. The rule is in
+# plugin_all.yaml, not plugin.yaml. Widgets and States use the same order, so
+# `build` stays last.
+bitwild_lints:
+  sort_class_members:
+    order:
+      - public-fields
+      - private-fields
+      - constructors
+      - static-methods
+      - private-methods
+      - private-getters
+      - private-setters
+      - public-getters
+      - public-setters
+      - public-methods
+      - overridden-public-methods
+      - overridden-public-getters
+      - build-method
+    widgets-order:
+      - public-fields
+      - private-fields
+      - constructors
+      - static-methods
+      - private-methods
+      - private-getters
+      - private-setters
+      - public-getters
+      - public-setters
+      - public-methods
+      - overridden-public-methods
+      - overridden-public-getters
+      - build-method

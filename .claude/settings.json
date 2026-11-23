@@ -18,7 +18,6 @@
       "Bash(test:*)",
       "Bash(sort:*)",
       "Bash(wc:*)",
-      "Bash(dcm:*)",
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_console_messages"
     ]

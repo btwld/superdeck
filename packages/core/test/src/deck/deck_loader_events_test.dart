@@ -90,7 +90,7 @@ void main() {
 
 class _TypedDeckLoader extends DeckLoader {
   @override
-  Stream<SlidesEvent> load() => Stream<SlidesEvent>.empty();
+  Stream<SlidesEvent> load() => const Stream<SlidesEvent>.empty();
 
   @override
   Future<void> reload() async {}

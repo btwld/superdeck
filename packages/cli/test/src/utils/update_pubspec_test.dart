@@ -7,7 +7,7 @@ void main() {
   final superdeckPath = '${deckWorkspace.superdeckDir.path}/';
   group('updatePubspecAssets', () {
     test('adds superdeck assets to empty pubspec', () {
-      final input = '''
+      const input = '''
 name: test_app
 description: A test app
 version: 1.0.0
@@ -18,7 +18,7 @@ version: 1.0.0
     });
 
     test('adds superdeck assets to pubspec with existing flutter section', () {
-      final input = '''
+      const input = '''
 name: test_app
 flutter:
   uses-material-design: true
@@ -29,7 +29,7 @@ flutter:
     });
 
     test('preserves existing assets while adding superdeck assets', () {
-      final input = '''
+      const input = '''
 name: test_app
 flutter:
   assets:
@@ -58,7 +58,7 @@ flutter:
     });
 
     test('preserves other flutter configuration', () {
-      final input = '''
+      const input = '''
 name: test_app
 flutter:
   uses-material-design: true
@@ -75,7 +75,7 @@ flutter:
     });
 
     test('adds correct normalized paths without duplicates', () {
-      final input = '''
+      const input = '''
 name: test_app
 flutter:
   uses-material-design: true
@@ -87,7 +87,7 @@ flutter:
     });
 
     test('running the updater multiple times does not create duplicates', () {
-      final input = '''
+      const input = '''
 name: test_app
 flutter:
   assets:

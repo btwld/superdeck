@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
+import '../examples/button.dart' as remix_button;
 import '../examples/mix/animation.dart' as mix_animation;
 import '../examples/mix/box_with_variants.dart' as mix_variants;
 import '../examples/mix/simple_box.dart' as mix_simple_box;
 import '../examples/select.dart' as naked_select;
-import '../examples/button.dart' as remix_button;
 import 'ack_metric_card.dart';
 
 /// Auto-registered demo widgets for Superdeck presentations.
@@ -29,22 +29,28 @@ import 'ack_metric_card.dart';
 /// QR codes use the built-in `@qrcode` widget.
 Map<String, WidgetFactory> get demoWidgets => {
   'mix-simple-box': (_) => _DemoWrapper(
-    child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
+    child: Transform.scale(scale: 3.0, child: const mix_simple_box.Example()),
   ),
   'mix-variants': (_) => _DemoWrapper(
-    child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
+    child: Transform.scale(scale: 3.0, child: const mix_variants.Example()),
   ),
   'mix-animation': (_) => _DemoWrapper(
-    child: Transform.scale(scale: 3.0, child: mix_animation.SwitchAnimation()),
+    child: Transform.scale(
+      scale: 3.0,
+      child: const mix_animation.SwitchAnimation(),
+    ),
   ),
   'naked-select': (_) => _DemoWrapper(
     child: Transform.scale(
       scale: 2.0,
-      child: naked_select.SimpleSelectExample(),
+      child: const naked_select.SimpleSelectExample(),
     ),
   ),
   'remix-button': (_) => _DemoWrapper(
-    child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
+    child: Transform.scale(
+      scale: 1.2,
+      child: const remix_button.ButtonExample(),
+    ),
   ),
   'ack-metric-card': AckMetricCard.new,
 };

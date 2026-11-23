@@ -159,7 +159,7 @@ This is test content.
 
         // Create minimal pubspec
         final pubspecFile = deckWorkspace.pubspecFile;
-        final originalContent = '''
+        const originalContent = '''
 name: test_project
 version: 1.0.0
 ''';

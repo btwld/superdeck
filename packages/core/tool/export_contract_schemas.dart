@@ -82,11 +82,11 @@ String _encodeJson(Map<String, Object?> schema) {
 
 Object? _canonicalize(Object? value) {
   return switch (value) {
-    Map map => <String, Object?>{
+    final Map map => <String, Object?>{
       for (final key in map.keys.map((key) => key as String).toList()..sort())
         key: _canonicalize(map[key]),
     },
-    List list => list.map(_canonicalize).toList(),
+    final List list => list.map(_canonicalize).toList(),
     _ => value,
   };
 }

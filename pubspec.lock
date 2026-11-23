@@ -169,6 +169,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  bitwild_analysis:
+    dependency: "direct dev"
+    description:
+      path: "packages/bitwild_analysis"
+      ref: "v0.3.0"
+      resolved-ref: "5c638dc900d24cb1c3369c5e52ccf4b149abf7a5"
+      url: "https://github.com/btwld/lints.git"
+    source: git
+    version: "0.3.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -401,14 +410,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  dart_code_metrics_presets:
-    dependency: transitive
-    description:
-      name: dart_code_metrics_presets
-      sha256: "9029dac0e2c62af8b8361f8d240e10cb023c11d7b9caaac2be85c77e4e63c486"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.33.0"
   dart_style:
     dependency: transitive
     description:
