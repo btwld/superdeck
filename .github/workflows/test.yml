@@ -54,10 +54,10 @@ jobs:
         timeout-minutes: 5
 
       # Runs what maintainers run: `dart analyze --fatal-infos` over every
-      # package, after code generation so generated files exist. DCM is the
-      # other half of `melos run analyze` and is not run here yet.
+      # package, with the bitwild_lints plugin, after code generation so
+      # generated files exist.
       - name: Analyze
-        run: melos run analyze:dart --no-select
+        run: melos run analyze --no-select
 
       - name: Check Contract Schemas
         run: melos run contracts:check --no-select

@@ -53,9 +53,8 @@ Always work inside the FVM-provided SDK (`.fvm/flutter_sdk`) to avoid toolchain 
 
 ### Analysis & Linting
 ```bash
-fvm dart run melos run analyze          # Run dart analyze + DCM analysis
-fvm dart run melos run analyze:all      # Full analysis including unused code/files
-fvm dart run melos run fix              # Apply dart fix + DCM autofixes
+fvm dart run melos run analyze          # Run dart analyze with the bitwild_lints plugin
+fvm dart run melos run fix              # Apply dart fix
 ```
 
 ### Code Generation
@@ -140,7 +139,7 @@ fvm dart run melos run clean            # Clean all Flutter build artifacts
 - Keep widgets focused; colocate private helpers with their widget
 - Run `melos run fix` before committing
 
-### Member Ordering (enforced by DCM)
+### Member Ordering (convention; `bitwild_lints/sort_class_members` can check it)
 1. Public fields
 2. Private fields
 3. Constructors
